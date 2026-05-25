@@ -1,4 +1,6 @@
+import 'package:eduschedule/view_models/hero/hero_view_models.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'screens/hero_screen.dart';
 import 'screens/form_screen.dart';
 import 'screens/generating_screen.dart';
@@ -9,17 +11,28 @@ import 'ga.dart';
 import 'theme.dart';
 
 void main() {
-  runApp(const JadwalPintarApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (_) => HeroViewModel()
+            ..fetchSchedulingStats()
+            ..startStatsPolling(),
+        ),
+      ],
+      child: const EduScheduleApp(),
+    ),
+  );
 }
 
-class JadwalPintarApp extends StatefulWidget {
-  const JadwalPintarApp({super.key});
+class EduScheduleApp extends StatefulWidget {
+  const EduScheduleApp({super.key});
 
   @override
-  State<JadwalPintarApp> createState() => _JadwalPintarAppState();
+  State<EduScheduleApp> createState() => _EduScheduleAppState();
 }
 
-class _JadwalPintarAppState extends State<JadwalPintarApp> {
+class _EduScheduleAppState extends State<EduScheduleApp> {
   String screen = 'hero'; // hero, form, generating, result
   int step = 0;
   School school = dummySchool;
@@ -41,8 +54,7 @@ class _JadwalPintarAppState extends State<JadwalPintarApp> {
     maxGeneration: 100,
     eliteSize: 5,
   );
-  int progressGen = 0;
-  int currentFitness = 0;
+
   List<Gene>? result;
   List<FitnessHistory> fitnessHistory = [];
   String? toastMessage;
@@ -84,13 +96,6 @@ class _JadwalPintarAppState extends State<JadwalPintarApp> {
 
   void updateGAConfig(GAConfig newGAConfig) {
     setState(() => gaConfig = newGAConfig);
-  }
-
-  void updateProgress(int gen, int fitness, int total) {
-    setState(() {
-      progressGen = gen;
-      currentFitness = fitness;
-    });
   }
 
   void setResult(
@@ -142,16 +147,11 @@ class _JadwalPintarAppState extends State<JadwalPintarApp> {
                 school,
                 constraints,
                 gaConfig,
-                updateProgress,
               );
-              setResult(
-                res['schedule'] as List<Gene>?,
-                res['fitnessHistory'] as List<FitnessHistory>,
-                res['finalFitness'] as int,
-              );
+              setResult(res.gene, res.fitnessHistory, res.bestFitness);
               setScreen('result');
               showToast(
-                "🎉 Jadwal berhasil dibuat! Fitness: ${res['finalFitness']}",
+                "🎉 Jadwal berhasil dibuat! Fitness: ${res.bestFitness}",
               );
             } catch (e) {
               showToast("Terjadi error saat generate jadwal.", type: 'error');
@@ -162,11 +162,7 @@ class _JadwalPintarAppState extends State<JadwalPintarApp> {
         );
         break;
       case 'generating':
-        currentScreen = GeneratingScreen(
-          progress: progressGen,
-          fitness: currentFitness,
-          total: gaConfig.maxGeneration,
-        );
+        currentScreen = GeneratingScreen();
         break;
       case 'result':
         currentScreen = ResultScreen(
@@ -182,7 +178,7 @@ class _JadwalPintarAppState extends State<JadwalPintarApp> {
     }
 
     return MaterialApp(
-      title: 'JadwalPintar',
+      title: 'EduSchedule',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       home: Scaffold(

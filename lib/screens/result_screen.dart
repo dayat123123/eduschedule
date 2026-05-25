@@ -743,7 +743,7 @@ class _ResultScreenState extends State<ResultScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: const [
             Text(
-              'JadwalPintar',
+              'EduSchedule',
               style: TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.w900,
@@ -752,7 +752,7 @@ class _ResultScreenState extends State<ResultScreen> {
               ),
             ),
             Text(
-              'AI School Scheduler',
+              'Smart Scheduling System',
               style: TextStyle(
                 color: AppColors.textMuted,
                 fontSize: 11,

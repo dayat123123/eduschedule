@@ -1,17 +1,9 @@
+import 'dart:async';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 
 class GeneratingScreen extends StatefulWidget {
-  final int progress;
-  final int fitness;
-  final int total;
-
-  const GeneratingScreen({
-    super.key,
-    required this.progress,
-    required this.fitness,
-    required this.total,
-  });
+  const GeneratingScreen({super.key});
 
   @override
   State<GeneratingScreen> createState() => _GeneratingScreenState();
@@ -20,40 +12,45 @@ class GeneratingScreen extends StatefulWidget {
 class _GeneratingScreenState extends State<GeneratingScreen>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
+  late final Timer _phaseTimer;
+  int _currentPhaseIndex = 0;
+
+  final List<String> _phases = [
+    "Inisialisasi populasi...",
+    "Evaluasi fitness...",
+    "Seleksi elitisme...",
+    "Crossover kromosom...",
+    "Mutasi gen...",
+    "Evolusi generasi baru...",
+  ];
 
   @override
   void initState() {
     super.initState();
 
+    // Animasi putaran ikon DNA
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 5),
     )..repeat();
+
+    // Timer otomatis untuk mengubah teks phase karena parameter sudah dihapus
+    _phaseTimer = Timer.periodic(const Duration(seconds: 2), (timer) {
+      setState(() {
+        _currentPhaseIndex = (_currentPhaseIndex + 1) % _phases.length;
+      });
+    });
   }
 
   @override
   void dispose() {
     _controller.dispose();
+    _phaseTimer.cancel();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final pct = widget.total > 0
-        ? ((widget.progress / widget.total) * 100).clamp(0, 100).round()
-        : 0;
-
-    final phases = [
-      "Inisialisasi populasi...",
-      "Evaluasi fitness...",
-      "Seleksi elitisme...",
-      "Crossover kromosom...",
-      "Mutasi gen...",
-      "Evolusi generasi baru...",
-    ];
-
-    final phase = phases[widget.progress % phases.length];
-
     final width = MediaQuery.of(context).size.width;
     final isMobile = width < 700;
 
@@ -76,11 +73,11 @@ class _GeneratingScreenState extends State<GeneratingScreen>
 
           Positioned.fill(
             child: Container(
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [const Color(0xFF0B1020), const Color(0xFF070B17)],
+                  colors: [Color(0xFF0B1020), Color(0xFF070B17)],
                 ),
               ),
             ),
@@ -95,7 +92,7 @@ class _GeneratingScreenState extends State<GeneratingScreen>
                   child: BackdropFilter(
                     filter: ImageFilter.blur(sigmaX: 28, sigmaY: 28),
                     child: Container(
-                      constraints: const BoxConstraints(maxWidth: 720),
+                      constraints: const BoxConstraints(maxWidth: 480),
                       padding: EdgeInsets.all(isMobile ? 24 : 34),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(34),
@@ -124,185 +121,106 @@ class _GeneratingScreenState extends State<GeneratingScreen>
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          // ===== DNA ICON =====
-                          AnimatedBuilder(
-                            animation: _controller,
-                            builder: (_, _) {
-                              return Transform.rotate(
-                                angle: _controller.value * 6.28,
-                                child: Container(
-                                  width: isMobile ? 86 : 104,
-                                  height: isMobile ? 86 : 104,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    gradient: LinearGradient(
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                      colors: [
-                                        const Color(
-                                          0xFF6366F1,
-                                        ).withValues(alpha: 0.95),
-                                        const Color(
-                                          0xFF8B5CF6,
-                                        ).withValues(alpha: 0.95),
-                                      ],
-                                    ),
-                                    border: Border.all(
-                                      color: Colors.white.withValues(
-                                        alpha: 0.25,
+                          // ===== ANIMATED LOADING & DNA ICON =====
+                          Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              // Efek loading melingkar (Circular Glow)
+                              SizedBox(
+                                width: isMobile ? 114 : 134,
+                                height: isMobile ? 114 : 134,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 4,
+                                  valueColor:
+                                      const AlwaysStoppedAnimation<Color>(
+                                        Color(0xFF8B5CF6),
                                       ),
-                                    ),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: const Color(
-                                          0xFF8B5CF6,
-                                        ).withValues(alpha: 0.40),
-                                        blurRadius: 30,
-                                        spreadRadius: 2,
-                                      ),
-                                    ],
-                                  ),
-                                  child: const Center(
-                                    child: Text(
-                                      '🧬',
-                                      style: TextStyle(fontSize: 42),
-                                    ),
+                                  backgroundColor: Colors.white.withValues(
+                                    alpha: 0.05,
                                   ),
                                 ),
-                              );
-                            },
+                              ),
+                              // Ikon DNA berputar di dalam lingkaran loading
+                              AnimatedBuilder(
+                                animation: _controller,
+                                builder: (_, _) {
+                                  return Transform.rotate(
+                                    angle: _controller.value * 6.28,
+                                    child: Container(
+                                      width: isMobile ? 86 : 104,
+                                      height: isMobile ? 86 : 104,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        gradient: LinearGradient(
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
+                                          colors: [
+                                            const Color(
+                                              0xFF6366F1,
+                                            ).withValues(alpha: 0.95),
+                                            const Color(
+                                              0xFF8B5CF6,
+                                            ).withValues(alpha: 0.95),
+                                          ],
+                                        ),
+                                        border: Border.all(
+                                          color: Colors.white.withValues(
+                                            alpha: 0.25,
+                                          ),
+                                        ),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: const Color(
+                                              0xFF8B5CF6,
+                                            ).withValues(alpha: 0.40),
+                                            blurRadius: 30,
+                                            spreadRadius: 2,
+                                          ),
+                                        ],
+                                      ),
+                                      child: const Center(
+                                        child: Text(
+                                          '🧬',
+                                          style: TextStyle(fontSize: 42),
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ],
                           ),
 
-                          SizedBox(height: isMobile ? 24 : 30),
+                          SizedBox(height: isMobile ? 32 : 38),
 
                           // ===== TITLE =====
                           Text(
                             'Algoritma Genetika Sedang Berjalan',
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              fontSize: isMobile ? 22 : 30,
+                              fontSize: isMobile ? 22 : 26,
                               fontWeight: FontWeight.w900,
                               color: Colors.white,
                               letterSpacing: -0.5,
                             ),
                           ),
 
-                          const SizedBox(height: 10),
+                          const SizedBox(height: 12),
 
-                          Text(
-                            phase,
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: isMobile ? 13 : 15,
-                              color: Colors.white.withValues(alpha: 0.65),
-                              height: 1.5,
+                          // ===== STATUS TEXT PERUBAHAN FASE =====
+                          AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 300),
+                            child: Text(
+                              _phases[_currentPhaseIndex],
+                              key: ValueKey<int>(_currentPhaseIndex),
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: isMobile ? 14 : 16,
+                                fontWeight: FontWeight.w500,
+                                color: const Color(0xFF6366F1),
+                                height: 1.5,
+                              ),
                             ),
-                          ),
-
-                          SizedBox(height: isMobile ? 28 : 36),
-
-                          // ===== PROGRESS =====
-                          Column(
-                            children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(100),
-                                child: Stack(
-                                  children: [
-                                    Container(
-                                      height: 14,
-                                      decoration: BoxDecoration(
-                                        color: Colors.white.withValues(
-                                          alpha: 0.08,
-                                        ),
-                                      ),
-                                    ),
-
-                                    AnimatedContainer(
-                                      duration: const Duration(
-                                        milliseconds: 450,
-                                      ),
-                                      curve: Curves.easeOutCubic,
-                                      width:
-                                          ((pct / 100) *
-                                          (isMobile ? 280 : 540)),
-                                      height: 14,
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(
-                                          100,
-                                        ),
-                                        gradient: const LinearGradient(
-                                          colors: [
-                                            Color(0xFF6366F1),
-                                            Color(0xFF8B5CF6),
-                                          ],
-                                        ),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: const Color(
-                                              0xFF8B5CF6,
-                                            ).withValues(alpha: 0.45),
-                                            blurRadius: 18,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-
-                              const SizedBox(height: 14),
-
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    'Generasi ${widget.progress}',
-                                    style: TextStyle(
-                                      color: Colors.white.withValues(
-                                        alpha: 0.75,
-                                      ),
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                  Text(
-                                    '$pct%',
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w800,
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-
-                          SizedBox(height: isMobile ? 26 : 34),
-
-                          // ===== STATS =====
-                          Wrap(
-                            spacing: 14,
-                            runSpacing: 14,
-                            alignment: WrapAlignment.center,
-                            children: [
-                              _glassStat(
-                                icon: Icons.auto_graph_rounded,
-                                label: 'Generasi',
-                                value: widget.progress.toString(),
-                              ),
-                              _glassStat(
-                                icon: Icons.bolt_rounded,
-                                label: 'Fitness',
-                                value: widget.fitness.toString(),
-                              ),
-                              _glassStat(
-                                icon: Icons.timelapse_rounded,
-                                label: 'Progress',
-                                value: '$pct%',
-                              ),
-                            ],
                           ),
 
                           SizedBox(height: isMobile ? 24 : 30),
@@ -326,68 +244,6 @@ class _GeneratingScreenState extends State<GeneratingScreen>
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _glassStat({
-    required IconData icon,
-    required String label,
-    required String value,
-  }) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(24),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
-        child: Container(
-          width: 150,
-          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(24),
-            color: Colors.white.withValues(alpha: 0.06),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
-          ),
-          child: Column(
-            children: [
-              Container(
-                width: 42,
-                height: 42,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: LinearGradient(
-                    colors: [
-                      const Color(0xFF6366F1).withValues(alpha: 0.9),
-                      const Color(0xFF8B5CF6).withValues(alpha: 0.9),
-                    ],
-                  ),
-                ),
-                child: Icon(icon, color: Colors.white, size: 20),
-              ),
-
-              const SizedBox(height: 14),
-
-              Text(
-                value,
-                style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w900,
-                  color: Colors.white,
-                ),
-              ),
-
-              const SizedBox(height: 4),
-
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white.withValues(alpha: 0.55),
-                ),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }

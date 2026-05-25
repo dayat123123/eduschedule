@@ -1,5 +1,7 @@
 import 'dart:ui';
+import 'package:eduschedule/view_models/hero/hero_view_models.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../theme.dart';
 
@@ -13,6 +15,7 @@ class HeroScreen extends StatefulWidget {
 }
 
 class _HeroScreenState extends State<HeroScreen> {
+  late final HeroViewModel _heroViewModel;
   final ScrollController _scrollController = ScrollController();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -20,6 +23,12 @@ class _HeroScreenState extends State<HeroScreen> {
   final GlobalKey _heroKey = GlobalKey();
   final GlobalKey _featuresKey = GlobalKey();
   final GlobalKey _aboutKey = GlobalKey();
+
+  @override
+  void initState() {
+    _heroViewModel = context.read<HeroViewModel>();
+    super.initState();
+  }
 
   void _scrollToSection(GlobalKey key) {
     final context = key.currentContext;
@@ -196,7 +205,7 @@ class _HeroScreenState extends State<HeroScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: const [
             Text(
-              'JadwalPintar',
+              'EduSchedule',
               style: TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.w900,
@@ -205,7 +214,7 @@ class _HeroScreenState extends State<HeroScreen> {
               ),
             ),
             Text(
-              'AI School Scheduler',
+              'Smart Scheduling System',
               style: TextStyle(
                 color: AppColors.textMuted,
                 fontSize: 11,
@@ -225,6 +234,13 @@ class _HeroScreenState extends State<HeroScreen> {
           colors: [AppColors.primary, AppColors.accentPurple],
         ),
         borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.4),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
       child: ElevatedButton(
         onPressed: widget.onStart,
@@ -237,7 +253,7 @@ class _HeroScreenState extends State<HeroScreen> {
           ),
         ),
         child: const Text(
-          'Mulai Sekarang',
+          'Mulai Optimalkan',
           style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.w700,
@@ -376,32 +392,110 @@ class _HeroScreenState extends State<HeroScreen> {
               ],
             ),
             const SizedBox(height: 80),
-            Container(
-              constraints: const BoxConstraints(maxWidth: 900),
-              padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 20),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.02),
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.primary.withValues(alpha: 0.08),
-                    blurRadius: 40,
-                    offset: const Offset(0, 20),
+            ListenableBuilder(
+              listenable:
+                  _heroViewModel, // Memantau perubahan state di HeroViewModel
+              builder: (context, _) {
+                // 1. Kondisi saat data sedang loading / memuat
+                if (_heroViewModel.isLoading) {
+                  return const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 40),
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          AppColors.primaryLight,
+                        ),
+                      ),
+                    ),
+                  );
+                }
+
+                // 2. Kondisi jika terjadi error saat fetch data
+                if (_heroViewModel.hasError) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 40),
+                    child: Text(
+                      _heroViewModel.errorMessage,
+                      style: const TextStyle(
+                        color: Colors.redAccent,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
+                    ),
+                  );
+                }
+
+                // Ambil data stats jika loaded sukses, jika null gunakan fallback mock data
+                final currentStats = _heroViewModel.stats;
+                if (currentStats == null) return const SizedBox.shrink();
+
+                // 3. Tampilan UI Utama saat data Berhasil Dimuat
+                return Container(
+                  constraints: const BoxConstraints(maxWidth: 900),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 40,
+                    horizontal: 20,
                   ),
-                ],
-              ),
-              child: const Wrap(
-                spacing: 50,
-                runSpacing: 28,
-                alignment: WrapAlignment.center,
-                children: [
-                  _StatWidget(number: '98%', label: 'Jam Guru Teroptimasi'),
-                  _StatWidget(number: '0 Konflik', label: 'Bentrok Jadwal'),
-                  _StatWidget(number: '< 30s', label: 'Kalkulasi Algoritma'),
-                  _StatWidget(number: '∞ Skenario', label: 'Alternatif Jadwal'),
-                ],
-              ),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.02),
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.05),
+                    ),
+                    // ... box shadow tetap sama ...
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // 1. Barisan Utama Statistik
+                      Wrap(
+                        spacing: 40,
+                        runSpacing: 28,
+                        alignment: WrapAlignment.center,
+                        children: [
+                          _StatWidget(
+                            number: currentStats.formattedTotalProcessed,
+                            label: 'Total Jadwal Sukses',
+                          ),
+                          _StatWidget(
+                            number: currentStats.formattedOptimization,
+                            label: 'Jam Guru Teroptimasi',
+                          ),
+                          _StatWidget(
+                            number: currentStats.formattedConflicts,
+                            label: 'Bentrok Jadwal',
+                          ),
+                          _StatWidget(
+                            number: currentStats
+                                .formattedScenarios, // Menukar kuota Alternatif Jadwal dengan ini
+                            label: 'Skenario Teranalisis',
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 24),
+                      Divider(
+                        color: Colors.white.withValues(alpha: 0.05),
+                        indent: 40,
+                        endIndent: 40,
+                      ),
+                      const SizedBox(height: 12),
+
+                      // 2. DATA BARU YANG DIMASUKKAN (lastUpdated):
+                      Text(
+                        'Sistem diperbarui secara real-time. Terakhir sinkronisasi: '
+                        '${currentStats.lastUpdated.day}/${currentStats.lastUpdated.month}/${currentStats.lastUpdated.year} '
+                        '${currentStats.lastUpdated.hour.toString().padLeft(2, '0')}:${currentStats.lastUpdated.minute.toString().padLeft(2, '0')}',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.35),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
             ),
           ],
         ),
@@ -587,7 +681,7 @@ class _HeroScreenState extends State<HeroScreen> {
                         : CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        'Kenapa JadwalPintar Dibutuhkan?',
+                        'Kenapa EduSchedule Dibutuhkan?',
                         style: TextStyle(
                           color: AppColors.primaryLight,
                           fontSize: 22,
@@ -596,7 +690,7 @@ class _HeroScreenState extends State<HeroScreen> {
                       ),
                       const SizedBox(height: 18),
                       Text(
-                        'Menyusun jadwal pelajaran secara manual seringkali menjadi tantangan serius bagi tim kurikulum. Ribuan variabel pembatas, preferensi guru, dan aturan sekolah menciptakan kompleksitas yang sulit dikelola.\n\nJadwalPintar hadir sebagai solusi modern. Kami menggunakan Algoritma Genetika canggih untuk mengoptimalkan setiap jam mengajar guru, meminimalkan jam kosong, dan menghilangkan bentrok. Hasilnya: jadwal sempurna yang membuat guru fokus mengajar, bukan repot mengatur jam.',
+                        'Menyusun jadwal pelajaran secara manual seringkali menjadi tantangan serius bagi tim kurikulum. Ribuan variabel pembatas, preferensi guru, dan aturan sekolah menciptakan kompleksitas yang sulit dikelola.\n\nEduSchedule hadir sebagai solusi modern. Kami menggunakan Algoritma Genetika canggih untuk mengoptimalkan setiap jam mengajar guru, meminimalkan jam kosong, dan menghilangkan bentrok. Hasilnya: jadwal sempurna yang membuat guru fokus mengajar, bukan repot mengatur jam.',
                         textAlign: isMobile
                             ? TextAlign.center
                             : TextAlign.start,
@@ -657,7 +751,7 @@ class _HeroScreenState extends State<HeroScreen> {
       color: AppColors.heroBackgroundSecondary.withValues(alpha: 0.5),
       child: Center(
         child: Container(
-          constraints: const BoxConstraints(maxWidth: 800),
+          constraints: const BoxConstraints(maxWidth: 850),
           child: Column(
             children: [
               const Icon(
@@ -667,7 +761,7 @@ class _HeroScreenState extends State<HeroScreen> {
               ),
               const SizedBox(height: 24),
               const Text(
-                '"Teknologi tidak akan pernah menggantikan guru yang hebat, tetapi teknologi di tangan guru yang hebat akan transformatif."',
+                '"Guru terbaik bukan yang bekerja paling keras menyusun jadwal, tetapi yang paling fokus mengajar dengan jadwal yang sempurna."',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: Colors.white,
@@ -685,8 +779,9 @@ class _HeroScreenState extends State<HeroScreen> {
                     radius: 20,
                     backgroundColor: Colors.white.withValues(alpha: 0.1),
                     child: const Icon(
-                      Icons.person_rounded,
-                      color: Colors.white,
+                      Icons.auto_awesome_rounded,
+                      color: AppColors.primaryLight,
+                      size: 18,
                     ),
                   ),
                   const SizedBox(width: 14),
@@ -694,7 +789,7 @@ class _HeroScreenState extends State<HeroScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'George Couros',
+                        'EduSchedule',
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
@@ -702,7 +797,7 @@ class _HeroScreenState extends State<HeroScreen> {
                         ),
                       ),
                       Text(
-                        'Inovator & Penulis Bidang Pendidikan',
+                        'Smart Scheduling System',
                         style: TextStyle(
                           color: AppColors.textMuted,
                           fontSize: 13,
@@ -726,7 +821,7 @@ class _HeroScreenState extends State<HeroScreen> {
       child: Column(
         children: [
           const Text(
-            'JadwalPintar',
+            'EduSchedule',
             style: TextStyle(
               color: Colors.white,
               fontSize: 26,
@@ -738,7 +833,7 @@ class _HeroScreenState extends State<HeroScreen> {
           SizedBox(
             width: 500,
             child: Text(
-              'Mendukung efisiensi administrasi sekolah demi masa depan pendidikan Indonesia yang lebih cerdas.',
+              'Optimalkan jam mengajar guru dan ciptakan jadwal sempurna untuk seluruh sekolah Anda',
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: AppColors.textMuted.withValues(alpha: 0.7),
@@ -751,7 +846,7 @@ class _HeroScreenState extends State<HeroScreen> {
           Divider(color: Colors.white.withValues(alpha: 0.05)),
           const SizedBox(height: 24),
           Text(
-            '© ${DateTime.now().year} JadwalPintar Inc. All rights reserved.',
+            '© ${DateTime.now().year} EduSchedule Inc. All rights reserved.',
             textAlign: TextAlign.center,
             style: const TextStyle(color: AppColors.textMuted, fontSize: 13),
           ),
@@ -793,7 +888,7 @@ class _HeroScreenState extends State<HeroScreen> {
                       ),
                       SizedBox(height: 16),
                       Text(
-                        'JadwalPintar',
+                        'EduSchedule',
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 22,
@@ -801,7 +896,7 @@ class _HeroScreenState extends State<HeroScreen> {
                         ),
                       ),
                       Text(
-                        'AI School Scheduler',
+                        'Smart Scheduling System',
                         style: TextStyle(
                           color: AppColors.textMuted,
                           fontSize: 13,

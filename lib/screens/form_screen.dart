@@ -991,7 +991,7 @@ class _FormScreenState extends State<FormScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: const [
             Text(
-              'JadwalPintar',
+              'EduSchedule',
               style: TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.w900,
@@ -1000,7 +1000,7 @@ class _FormScreenState extends State<FormScreen> {
               ),
             ),
             Text(
-              'AI School Scheduler',
+              'Smart Scheduling System',
               style: TextStyle(
                 color: AppColors.textMuted,
                 fontSize: 11,

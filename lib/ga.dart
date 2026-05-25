@@ -326,19 +326,14 @@ List<Gene> mutate(
   }).toList();
 }
 
-Future<Map<String, dynamic>> runGeneticAlgorithm(
+Future<GAResult> runGeneticAlgorithm(
   List<Subject> mapel,
   List<Teacher> guru,
   School school,
   Constraints constraints,
   GAConfig gaConfig,
-  Function(int gen, int fitness, int total) onProgress,
 ) async {
   final timeSlots = generateTimeSlots(school);
-
-  // constraints saat ini belum digunakan penuh di fitness (akan diimplement pada langkah berikut)
-  // parameter ini disiapkan supaya UI Constraints bisa benar-benar mempengaruhi hasil.
-
   final populationSize = gaConfig.populationSize;
   final mutationRate = gaConfig.mutationRate;
   final crossoverRate = gaConfig.crossoverRate;
@@ -393,8 +388,6 @@ Future<Map<String, dynamic>> runGeneticAlgorithm(
       FitnessHistory(gen: gen, fitness: currentBest, avg: avg.toDouble()),
     );
 
-    onProgress(gen, currentBest, maxGeneration);
-
     if (gen >= maxGeneration - 1) break;
 
     final elite = scored
@@ -434,12 +427,24 @@ Future<Map<String, dynamic>> runGeneticAlgorithm(
     gen++;
 
     // Yield to allow UI updates
-    await Future.delayed(Duration.zero);
   }
+  await Future.delayed(Duration(seconds: 5));
 
-  return {
-    'schedule': bestChromosome,
-    'fitnessHistory': fitnessHistory,
-    'finalFitness': bestFitness,
-  };
+  return GAResult(
+    gene: bestChromosome,
+    fitnessHistory: fitnessHistory,
+    bestFitness: bestFitness,
+  );
+}
+
+class GAResult {
+  final List<Gene>? gene;
+  final List<FitnessHistory> fitnessHistory;
+  final int bestFitness;
+
+  const GAResult({
+    required this.gene,
+    required this.fitnessHistory,
+    required this.bestFitness,
+  });
 }
