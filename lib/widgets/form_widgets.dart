@@ -2785,6 +2785,46 @@ class FormConstraints extends StatelessWidget {
           max: 6,
           onChange: (v) => onChange(data.copyWith(maxBerturutan: v.toInt())),
         ),
+        const SizedBox(height: 18),
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            onPressed: () {
+              // Terapkan rumus/rekomendasi terbaik sederhana untuk constraints
+              onChange(
+                data.copyWith(
+                  guruTidakBentrok: true,
+                  kelasTidakBentrok: true,
+                  ruangTidakBentrok: true,
+                  hindariJamKosong: true,
+                  maxBeratPerHari: 2,
+                  maxBerturutan: 3,
+                ),
+              );
+            },
+            icon: const Icon(Icons.settings, color: Colors.white),
+            label: const Text(
+              'Terapkan Rumus Terekomendasi',
+              style: TextStyle(color: Colors.white),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF6366F1),
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ),
+        ),
+
+        const SizedBox(height: 8),
+        const Align(
+          alignment: Alignment.centerLeft,
+          child: Text(
+            'Catatan: Tombol ini menerapkan rekomendasi aturan terbaik untuk meminimalkan bentrok dan jam kosong. Anda masih bisa menyesuaikan nilai secara manual.',
+            style: TextStyle(color: Color(0xFFBFC7FF), fontSize: 12),
+          ),
+        ),
       ],
     );
   }
@@ -2855,271 +2895,327 @@ class _FormGAConfigState extends State<FormGAConfig> {
       builder: (context, constraints) {
         final isMobile = constraints.maxWidth < 700;
 
-        return Wrap(
-          spacing: 14,
-          runSpacing: 14,
-          children: fields.map((f) {
-            final key = f['key'] as String;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Wrap(
+              spacing: 14,
+              runSpacing: 14,
+              children: fields.map((f) {
+                final key = f['key'] as String;
 
-            double val;
-            switch (key) {
-              case 'populationSize':
-                val = widget.data.populationSize.toDouble();
-                break;
-              case 'mutationRate':
-                val = widget.data.mutationRate;
-                break;
-              case 'crossoverRate':
-                val = widget.data.crossoverRate;
-                break;
-              case 'maxGeneration':
-                val = widget.data.maxGeneration.toDouble();
-                break;
-              case 'eliteSize':
-                val = widget.data.eliteSize.toDouble();
-                break;
-              default:
-                val = 0;
-            }
+                double val;
+                switch (key) {
+                  case 'populationSize':
+                    val = widget.data.populationSize.toDouble();
+                    break;
+                  case 'mutationRate':
+                    val = widget.data.mutationRate;
+                    break;
+                  case 'crossoverRate':
+                    val = widget.data.crossoverRate;
+                    break;
+                  case 'maxGeneration':
+                    val = widget.data.maxGeneration.toDouble();
+                    break;
+                  case 'eliteSize':
+                    val = widget.data.eliteSize.toDouble();
+                    break;
+                  default:
+                    val = 0;
+                }
 
-            return SizedBox(
-              width: isMobile ? constraints.maxWidth : 260,
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 250),
-                curve: Curves.easeOutCubic,
-                padding: const EdgeInsets.all(18),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(28),
+                return SizedBox(
+                  width: isMobile ? constraints.maxWidth : 260,
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 250),
+                    curve: Curves.easeOutCubic,
+                    padding: const EdgeInsets.all(18),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(28),
 
-                  // ===== LIQUID GLASS =====
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Colors.white.withValues(alpha: 0.07),
-                      Colors.white.withValues(alpha: 0.03),
-                    ],
-                  ),
+                      // ===== LIQUID GLASS =====
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          Colors.white.withValues(alpha: 0.07),
+                          Colors.white.withValues(alpha: 0.03),
+                        ],
+                      ),
 
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.08),
-                  ),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.08),
+                      ),
 
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.08),
-                      blurRadius: 22,
-                      offset: const Offset(0, 10),
-                    ),
-                  ],
-                ),
-
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // ===== TOP =====
-                    Row(
-                      children: [
-                        Container(
-                          width: 38,
-                          height: 38,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(14),
-                            gradient: LinearGradient(
-                              colors: [
-                                const Color(0xFF6366F1).withValues(alpha: 0.90),
-                                const Color(0xFF8B5CF6).withValues(alpha: 0.85),
-                              ],
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: const Color(
-                                  0xFF8B5CF6,
-                                ).withValues(alpha: 0.25),
-                                blurRadius: 14,
-                                offset: const Offset(0, 6),
-                              ),
-                            ],
-                          ),
-                          child: Icon(
-                            f['icon'] as IconData,
-                            color: Colors.white,
-                            size: 18,
-                          ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.08),
+                          blurRadius: 22,
+                          offset: const Offset(0, 10),
                         ),
+                      ],
+                    ),
 
-                        const SizedBox(width: 12),
-
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                f['label'] as String,
-                                style: const TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.white,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // ===== TOP =====
+                        Row(
+                          children: [
+                            Container(
+                              width: 38,
+                              height: 38,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(14),
+                                gradient: LinearGradient(
+                                  colors: [
+                                    const Color(
+                                      0xFF6366F1,
+                                    ).withValues(alpha: 0.90),
+                                    const Color(
+                                      0xFF8B5CF6,
+                                    ).withValues(alpha: 0.85),
+                                  ],
                                 ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(
+                                      0xFF8B5CF6,
+                                    ).withValues(alpha: 0.25),
+                                    blurRadius: 14,
+                                    offset: const Offset(0, 6),
+                                  ),
+                                ],
                               ),
+                              child: Icon(
+                                f['icon'] as IconData,
+                                color: Colors.white,
+                                size: 18,
+                              ),
+                            ),
 
-                              const SizedBox(height: 2),
+                            const SizedBox(width: 12),
 
-                              Text(
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    f['label'] as String,
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w700,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+
+                                  const SizedBox(height: 2),
+
+                                  Text(
+                                    activeTooltip == key
+                                        ? tooltips[key]!
+                                        : 'Konfigurasi algoritma',
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontSize: 10.5,
+                                      height: 1.4,
+                                      color: Colors.white.withValues(
+                                        alpha: 0.55,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+
+                            GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  activeTooltip = activeTooltip == key
+                                      ? null
+                                      : key;
+                                });
+                              },
+                              child: Icon(
                                 activeTooltip == key
-                                    ? tooltips[key]!
-                                    : 'Konfigurasi algoritma',
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
+                                    ? Icons.close_rounded
+                                    : Icons.info_outline_rounded,
+                                size: 18,
+                                color: Colors.white.withValues(alpha: 0.7),
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        const SizedBox(height: 22),
+
+                        // ===== VALUE =====
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Text(
+                              val.toStringAsFixed(key.contains('Rate') ? 2 : 0),
+                              style: const TextStyle(
+                                fontSize: 28,
+                                height: 1,
+                                fontWeight: FontWeight.w900,
+                                color: Colors.white,
+                              ),
+                            ),
+
+                            const SizedBox(width: 8),
+
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 3),
+                              child: Text(
+                                key.contains('Rate') ? '%' : '',
                                 style: TextStyle(
-                                  fontSize: 10.5,
-                                  height: 1.4,
-                                  color: Colors.white.withValues(alpha: 0.55),
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white.withValues(alpha: 0.5),
                                 ),
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
 
-                        GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              activeTooltip = activeTooltip == key ? null : key;
-                            });
-                          },
-                          child: Icon(
-                            activeTooltip == key
-                                ? Icons.close_rounded
-                                : Icons.info_outline_rounded,
-                            size: 18,
-                            color: Colors.white.withValues(alpha: 0.7),
-                          ),
-                        ),
-                      ],
-                    ),
+                        const SizedBox(height: 18),
 
-                    const SizedBox(height: 22),
+                        // ===== SLIDER =====
+                        SliderTheme(
+                          data: SliderTheme.of(context).copyWith(
+                            trackHeight: 4,
+                            activeTrackColor: const Color(0xFF8B5CF6),
+                            inactiveTrackColor: Colors.white.withValues(
+                              alpha: 0.08,
+                            ),
 
-                    // ===== VALUE =====
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(
-                          val.toStringAsFixed(key.contains('Rate') ? 2 : 0),
-                          style: const TextStyle(
-                            fontSize: 28,
-                            height: 1,
-                            fontWeight: FontWeight.w900,
-                            color: Colors.white,
-                          ),
-                        ),
+                            thumbColor: Colors.white,
 
-                        const SizedBox(width: 8),
+                            overlayColor: const Color(
+                              0xFF8B5CF6,
+                            ).withValues(alpha: 0.12),
 
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 3),
-                          child: Text(
-                            key.contains('Rate') ? '%' : '',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.white.withValues(alpha: 0.5),
+                            thumbShape: const RoundSliderThumbShape(
+                              enabledThumbRadius: 7,
                             ),
                           ),
+
+                          child: Slider(
+                            value: val,
+                            min: (f['min'] as num).toDouble(),
+                            max: (f['max'] as num).toDouble(),
+                            onChanged: (v) {
+                              GAConfig n;
+
+                              switch (key) {
+                                case 'populationSize':
+                                  n = widget.data.copyWith(
+                                    populationSize: v.toInt(),
+                                  );
+                                  break;
+
+                                case 'mutationRate':
+                                  n = widget.data.copyWith(mutationRate: v);
+                                  break;
+
+                                case 'crossoverRate':
+                                  n = widget.data.copyWith(crossoverRate: v);
+                                  break;
+
+                                case 'maxGeneration':
+                                  n = widget.data.copyWith(
+                                    maxGeneration: v.toInt(),
+                                  );
+                                  break;
+
+                                case 'eliteSize':
+                                  n = widget.data.copyWith(
+                                    eliteSize: v.toInt(),
+                                  );
+                                  break;
+
+                                default:
+                                  n = widget.data;
+                              }
+
+                              widget.onChange(n);
+                            },
+                          ),
+                        ),
+
+                        const SizedBox(height: 4),
+
+                        // ===== RANGE =====
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              '${f['min']}',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: Colors.white.withValues(alpha: 0.40),
+                              ),
+                            ),
+                            Text(
+                              '${f['max']}',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: Colors.white.withValues(alpha: 0.40),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
+                  ),
+                );
+              }).toList(),
+            ),
 
-                    const SizedBox(height: 18),
+            const SizedBox(height: 18),
 
-                    // ===== SLIDER =====
-                    SliderTheme(
-                      data: SliderTheme.of(context).copyWith(
-                        trackHeight: 4,
-                        activeTrackColor: const Color(0xFF8B5CF6),
-                        inactiveTrackColor: Colors.white.withValues(
-                          alpha: 0.08,
-                        ),
-
-                        thumbColor: Colors.white,
-
-                        overlayColor: const Color(
-                          0xFF8B5CF6,
-                        ).withValues(alpha: 0.12),
-
-                        thumbShape: const RoundSliderThumbShape(
-                          enabledThumbRadius: 7,
-                        ),
-                      ),
-
-                      child: Slider(
-                        value: val,
-                        min: (f['min'] as num).toDouble(),
-                        max: (f['max'] as num).toDouble(),
-                        onChanged: (v) {
-                          GAConfig n;
-
-                          switch (key) {
-                            case 'populationSize':
-                              n = widget.data.copyWith(
-                                populationSize: v.toInt(),
-                              );
-                              break;
-
-                            case 'mutationRate':
-                              n = widget.data.copyWith(mutationRate: v);
-                              break;
-
-                            case 'crossoverRate':
-                              n = widget.data.copyWith(crossoverRate: v);
-                              break;
-
-                            case 'maxGeneration':
-                              n = widget.data.copyWith(
-                                maxGeneration: v.toInt(),
-                              );
-                              break;
-
-                            case 'eliteSize':
-                              n = widget.data.copyWith(eliteSize: v.toInt());
-                              break;
-
-                            default:
-                              n = widget.data;
-                          }
-
-                          widget.onChange(n);
-                        },
-                      ),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  // Terapkan rekomendasi konfigurasi GA yang umum efektif
+                  widget.onChange(
+                    widget.data.copyWith(
+                      populationSize: 100,
+                      mutationRate: 0.05,
+                      crossoverRate: 0.8,
+                      maxGeneration: 200,
+                      eliteSize: 5,
                     ),
-
-                    const SizedBox(height: 4),
-
-                    // ===== RANGE =====
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          '${f['min']}',
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: Colors.white.withValues(alpha: 0.40),
-                          ),
-                        ),
-                        Text(
-                          '${f['max']}',
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: Colors.white.withValues(alpha: 0.40),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+                  );
+                },
+                icon: const Icon(Icons.settings, color: Colors.white),
+                label: const Text(
+                  'Terapkan Rumus Terekomendasi',
+                  style: TextStyle(color: Colors.white),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF8B5CF6),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
               ),
-            );
-          }).toList(),
+            ),
+
+            const SizedBox(height: 8),
+            const Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Catatan: Tombol ini mengisi parameter GA dengan nilai rekomendasi untuk keseimbangan kecepatan dan kualitas solusi. Pengaturan ini mempengaruhi waktu komputasi dan kualitas akhir jadwal.',
+                style: TextStyle(color: Color(0xFFBFC7FF), fontSize: 12),
+              ),
+            ),
+          ],
         );
       },
     );

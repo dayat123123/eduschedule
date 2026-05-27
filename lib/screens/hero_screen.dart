@@ -392,111 +392,111 @@ class _HeroScreenState extends State<HeroScreen> {
               ],
             ),
             const SizedBox(height: 80),
-            ListenableBuilder(
-              listenable:
-                  _heroViewModel, // Memantau perubahan state di HeroViewModel
-              builder: (context, _) {
-                // 1. Kondisi saat data sedang loading / memuat
-                if (_heroViewModel.isLoading) {
-                  return const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 40),
-                    child: Center(
-                      child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          AppColors.primaryLight,
-                        ),
-                      ),
-                    ),
-                  );
-                }
+            // ListenableBuilder(
+            //   listenable:
+            //       _heroViewModel, // Memantau perubahan state di HeroViewModel
+            //   builder: (context, _) {
+            //     // 1. Kondisi saat data sedang loading / memuat
+            //     if (_heroViewModel.isLoading) {
+            //       return const Padding(
+            //         padding: EdgeInsets.symmetric(vertical: 40),
+            //         child: Center(
+            //           child: CircularProgressIndicator(
+            //             valueColor: AlwaysStoppedAnimation<Color>(
+            //               AppColors.primaryLight,
+            //             ),
+            //           ),
+            //         ),
+            //       );
+            //     }
 
-                // 2. Kondisi jika terjadi error saat fetch data
-                if (_heroViewModel.hasError) {
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 40),
-                    child: Text(
-                      _heroViewModel.errorMessage,
-                      style: const TextStyle(
-                        color: Colors.redAccent,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14,
-                      ),
-                    ),
-                  );
-                }
+            //     // 2. Kondisi jika terjadi error saat fetch data
+            //     if (_heroViewModel.hasError) {
+            //       return Padding(
+            //         padding: const EdgeInsets.symmetric(vertical: 40),
+            //         child: Text(
+            //           _heroViewModel.errorMessage,
+            //           style: const TextStyle(
+            //             color: Colors.redAccent,
+            //             fontWeight: FontWeight.w600,
+            //             fontSize: 14,
+            //           ),
+            //         ),
+            //       );
+            //     }
 
-                // Ambil data stats jika loaded sukses, jika null gunakan fallback mock data
-                final currentStats = _heroViewModel.stats;
-                if (currentStats == null) return const SizedBox.shrink();
+            //     // Ambil data stats jika loaded sukses, jika null gunakan fallback mock data
+            //     final currentStats = _heroViewModel.stats;
+            //     if (currentStats == null) return const SizedBox.shrink();
 
-                // 3. Tampilan UI Utama saat data Berhasil Dimuat
-                return Container(
-                  constraints: const BoxConstraints(maxWidth: 900),
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 40,
-                    horizontal: 20,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.02),
-                    borderRadius: BorderRadius.circular(24),
-                    border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.05),
-                    ),
-                    // ... box shadow tetap sama ...
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // 1. Barisan Utama Statistik
-                      Wrap(
-                        spacing: 40,
-                        runSpacing: 28,
-                        alignment: WrapAlignment.center,
-                        children: [
-                          _StatWidget(
-                            number: currentStats.formattedTotalProcessed,
-                            label: 'Total Jadwal Sukses',
-                          ),
-                          _StatWidget(
-                            number: currentStats.formattedOptimization,
-                            label: 'Jam Guru Teroptimasi',
-                          ),
-                          _StatWidget(
-                            number: currentStats.formattedConflicts,
-                            label: 'Bentrok Jadwal',
-                          ),
-                          _StatWidget(
-                            number: currentStats
-                                .formattedScenarios, // Menukar kuota Alternatif Jadwal dengan ini
-                            label: 'Skenario Teranalisis',
-                          ),
-                        ],
-                      ),
+            //     // 3. Tampilan UI Utama saat data Berhasil Dimuat
+            //     return Container(
+            //       constraints: const BoxConstraints(maxWidth: 900),
+            //       padding: const EdgeInsets.symmetric(
+            //         vertical: 40,
+            //         horizontal: 20,
+            //       ),
+            //       decoration: BoxDecoration(
+            //         color: Colors.white.withValues(alpha: 0.02),
+            //         borderRadius: BorderRadius.circular(24),
+            //         border: Border.all(
+            //           color: Colors.white.withValues(alpha: 0.05),
+            //         ),
+            //         // ... box shadow tetap sama ...
+            //       ),
+            //       child: Column(
+            //         mainAxisSize: MainAxisSize.min,
+            //         children: [
+            //           // 1. Barisan Utama Statistik
+            //           Wrap(
+            //             spacing: 40,
+            //             runSpacing: 28,
+            //             alignment: WrapAlignment.center,
+            //             children: [
+            //               _StatWidget(
+            //                 number: currentStats.formattedTotalProcessed,
+            //                 label: 'Total Jadwal Sukses',
+            //               ),
+            //               _StatWidget(
+            //                 number: currentStats.formattedOptimization,
+            //                 label: 'Jam Guru Teroptimasi',
+            //               ),
+            //               _StatWidget(
+            //                 number: currentStats.formattedConflicts,
+            //                 label: 'Bentrok Jadwal',
+            //               ),
+            //               _StatWidget(
+            //                 number: currentStats
+            //                     .formattedScenarios, // Menukar kuota Alternatif Jadwal dengan ini
+            //                 label: 'Skenario Teranalisis',
+            //               ),
+            //             ],
+            //           ),
 
-                      const SizedBox(height: 24),
-                      Divider(
-                        color: Colors.white.withValues(alpha: 0.05),
-                        indent: 40,
-                        endIndent: 40,
-                      ),
-                      const SizedBox(height: 12),
+            //           const SizedBox(height: 24),
+            //           Divider(
+            //             color: Colors.white.withValues(alpha: 0.05),
+            //             indent: 40,
+            //             endIndent: 40,
+            //           ),
+            //           const SizedBox(height: 12),
 
-                      // 2. DATA BARU YANG DIMASUKKAN (lastUpdated):
-                      Text(
-                        'Sistem diperbarui secara real-time. Terakhir sinkronisasi: '
-                        '${currentStats.lastUpdated.day}/${currentStats.lastUpdated.month}/${currentStats.lastUpdated.year} '
-                        '${currentStats.lastUpdated.hour.toString().padLeft(2, '0')}:${currentStats.lastUpdated.minute.toString().padLeft(2, '0')}',
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.35),
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
+            //           // 2. DATA BARU YANG DIMASUKKAN (lastUpdated):
+            //           Text(
+            //             'Sistem diperbarui secara real-time. Terakhir sinkronisasi: '
+            //             '${currentStats.lastUpdated.day}/${currentStats.lastUpdated.month}/${currentStats.lastUpdated.year} '
+            //             '${currentStats.lastUpdated.hour.toString().padLeft(2, '0')}:${currentStats.lastUpdated.minute.toString().padLeft(2, '0')}',
+            //             style: TextStyle(
+            //               color: Colors.white.withValues(alpha: 0.35),
+            //               fontSize: 12,
+            //               fontWeight: FontWeight.w500,
+            //             ),
+            //           ),
+            //         ],
+            //       ),
+            //     );
+            //   },
+            // ),
           ],
         ),
       ),
