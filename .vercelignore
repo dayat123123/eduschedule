@@ -1,0 +1,14 @@
+.dart_tool
+.idea
+.git
+build
+macos
+ios
+android
+linux
+windows
+pubspec.lock
+\*.iml
+.DS_Store
+README.md
+TODO.md

@@ -1,0 +1,8 @@
+{
+  "name": "eduschedule",
+  "private": true,
+  "scripts": {
+    "build": "flutter build web --release",
+    "vercel-build": "flutter pub get && flutter build web --release"
+  }
+}
