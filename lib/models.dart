@@ -516,4 +516,3 @@ class FitnessHistory {
 
   FitnessHistory({required this.gen, required this.fitness, required this.avg});
 }
-//
