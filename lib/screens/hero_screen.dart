@@ -846,7 +846,7 @@ class _HeroScreenState extends State<HeroScreen> {
           Divider(color: Colors.white.withValues(alpha: 0.05)),
           const SizedBox(height: 24),
           Text(
-            '© ${DateTime.now().year} EduSchedule Inc. All rights reserved.',
+            '© ${DateTime.now().year} EduSchedule - Scheduling for Educators',
             textAlign: TextAlign.center,
             style: const TextStyle(color: AppColors.textMuted, fontSize: 13),
           ),

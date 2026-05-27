@@ -1,6 +1,8 @@
 import 'dart:ui';
+import 'dart:html' as html show AnchorElement, Blob, Url;
 
 import 'package:excel/excel.dart' as ex;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:open_filex/open_filex.dart';
@@ -158,13 +160,23 @@ class _ResultScreenState extends State<ResultScreen> {
         throw Exception('Gagal generate excel');
       }
 
-      final dir = await getApplicationDocumentsDirectory();
-
-      final file = File('${dir.path}/jadwal_pelajaran.xlsx');
-
-      await file.writeAsBytes(bytes);
-
-      await OpenFilex.open(file.path);
+      if (kIsWeb) {
+        // Web: Download using HTML Blob
+        final blob = html.Blob([
+          bytes,
+        ], 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        final url = html.Url.createObjectUrlFromBlob(blob);
+        final anchor = html.AnchorElement(href: url)
+          ..setAttribute('download', 'jadwal_pelajaran.xlsx')
+          ..click();
+        html.Url.revokeObjectUrl(url);
+      } else {
+        // Native: Save to documents directory
+        final dir = await getApplicationDocumentsDirectory();
+        final file = File('${dir.path}/jadwal_pelajaran.xlsx');
+        await file.writeAsBytes(bytes);
+        await OpenFilex.open(file.path);
+      }
     } catch (e) {
       debugPrint('Export excel error: $e');
     }
