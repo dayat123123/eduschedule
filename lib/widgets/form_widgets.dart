@@ -84,7 +84,6 @@ class StepIndicator extends StatelessWidget {
 
     final double circleSize = isVerySmall ? 38 : (isSmall ? 44 : 52);
     final double textSize = isVerySmall ? 10 : (isSmall ? 11 : 13);
-    final double spacing = isVerySmall ? 8 : 12;
     final double stepWidth = isVerySmall ? 82 : (isSmall ? 102 : 122);
 
     return SingleChildScrollView(
@@ -114,99 +113,30 @@ class StepIndicator extends StatelessWidget {
                       height: circleSize,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-
-                        // ACTIVE / DONE
-                        gradient: isDone || isActive
+                        gradient: (isDone || isActive)
                             ? const LinearGradient(
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
                                 colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
                               )
-                            : LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: [
-                                  Colors.white.withValues(alpha: 0.12),
-                                  Colors.white.withValues(alpha: 0.04),
-                                ],
-                              ),
-
-                        border: Border.all(
-                          color: isDone || isActive
-                              ? Colors.white.withValues(alpha: 0.15)
-                              : Colors.white.withValues(alpha: 0.12),
-                          width: 1.2,
-                        ),
-
-                        boxShadow: [
-                          if (isActive)
-                            BoxShadow(
-                              color: const Color(
-                                0xFF8B5CF6,
-                              ).withValues(alpha: 0.35),
-                              blurRadius: 18,
-                              spreadRadius: 1,
-                              offset: const Offset(0, 6),
-                            ),
-
-                          if (!isActive)
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.03),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            ),
-                        ],
+                            : null,
+                        color: (isDone || isActive)
+                            ? null
+                            : Colors.white.withValues(alpha: 0.68),
                       ),
-
                       child: Center(
-                        child: AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 250),
-                          transitionBuilder: (child, animation) =>
-                              ScaleTransition(scale: animation, child: child),
-                          child: isDone
-                              ? Icon(
-                                  Icons.check_rounded,
-                                  key: ValueKey('done$i'),
-                                  color: Colors.white,
-                                  size: isVerySmall ? 18 : 22,
-                                )
-                              : Text(
-                                  '${i + 1}',
-                                  key: ValueKey('text$i'),
-                                  style: TextStyle(
-                                    fontSize: isVerySmall ? 12 : 14,
-                                    fontWeight: FontWeight.w800,
-                                    color: isActive
-                                        ? Colors.white
-                                        : Colors.white.withValues(alpha: 0.75),
-                                  ),
-                                ),
-                        ),
-                      ),
-                    ),
-
-                    SizedBox(height: spacing),
-
-                    // LABEL
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 4),
-                      child: AnimatedDefaultTextStyle(
-                        duration: const Duration(milliseconds: 300),
-                        style: TextStyle(
-                          height: 1.3,
-                          fontSize: textSize,
-                          fontWeight: isActive
-                              ? FontWeight.w700
-                              : FontWeight.w500,
-                          color: isActive
-                              ? Colors.white
-                              : Colors.white.withValues(alpha: 0.68),
-                        ),
                         child: Text(
                           steps[i],
                           textAlign: TextAlign.center,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: isActive
+                                ? FontWeight.w700
+                                : FontWeight.w500,
+                            fontSize: textSize - 1,
+                          ),
                         ),
                       ),
                     ),
@@ -231,7 +161,9 @@ class StepIndicator extends StatelessWidget {
                         height: 4,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(999),
-                          color: Colors.white.withValues(alpha: 0.08),
+                          color: Colors.white.withValues(
+                            alpha: 0.08,
+                          ), // Diubah ke withOpacity untuk kompatibilitas
                         ),
                       ),
 
@@ -250,9 +182,9 @@ class StepIndicator extends StatelessWidget {
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(
-                                0xFF8B5CF6,
-                              ).withValues(alpha: 0.35),
+                              color: const Color(0xFF8B5CF6).withValues(
+                                alpha: 0.35,
+                              ), // Diubah ke withOpacity untuk kompatibilitas
                               blurRadius: 10,
                             ),
                           ],
@@ -367,6 +299,8 @@ class FormSekolah extends StatefulWidget {
 
 class _FormSekolahState extends State<FormSekolah> {
   final TextEditingController _kelasController = TextEditingController();
+  final TextEditingController _ruanganController = TextEditingController();
+  final Map<String, TextEditingController> _subControllers = {};
 
   // Temp waktu istirahat per penambahan
   String _tempBreakFrom = '';
@@ -375,6 +309,7 @@ class _FormSekolahState extends State<FormSekolah> {
   @override
   void dispose() {
     _kelasController.dispose();
+    _ruanganController.dispose();
     super.dispose();
   }
 
@@ -404,8 +339,17 @@ class _FormSekolahState extends State<FormSekolah> {
       return;
     }
     final newList = [...widget.data.kelasList, normalized];
+    final newSub = {...widget.data.kelasSubclasses};
+    newSub[normalized] = [];
+    final newRooms = {...widget.data.kelasRooms};
+    newRooms[normalized] = [];
     widget.onChange(
-      widget.data.copyWith(kelasList: newList, kelas: newList.first),
+      widget.data.copyWith(
+        kelasList: newList,
+        kelas: newList.first,
+        kelasSubclasses: newSub,
+        kelasRooms: newRooms,
+      ),
     );
     _kelasController.clear();
   }
@@ -417,8 +361,68 @@ class _FormSekolahState extends State<FormSekolah> {
     final newList = widget.data.kelasList
         .where((item) => item != kelas)
         .toList();
+    final newSub = {...widget.data.kelasSubclasses};
+    newSub.remove(kelas);
+    final newRooms = {...widget.data.kelasRooms};
+    newRooms.remove(kelas);
     final newKelas = newList.isNotEmpty ? newList.first : '';
-    widget.onChange(widget.data.copyWith(kelasList: newList, kelas: newKelas));
+    widget.onChange(
+      widget.data.copyWith(
+        kelasList: newList,
+        kelas: newKelas,
+        kelasSubclasses: newSub,
+        kelasRooms: newRooms,
+      ),
+    );
+  }
+
+  void _addSubclass(String grade, String val) {
+    final normalized = val.trim().toUpperCase();
+    if (normalized.isEmpty) return;
+    final copy = {...widget.data.kelasSubclasses};
+    final list = List<String>.from(copy[grade] ?? []);
+    if (list.contains(normalized)) return;
+    list.add(normalized);
+    copy[grade] = list;
+    widget.onChange(widget.data.copyWith(kelasSubclasses: copy));
+  }
+
+  void _removeSubclass(String grade, String sub) {
+    final copy = {...widget.data.kelasSubclasses};
+    final list = List<String>.from(copy[grade] ?? []);
+    list.remove(sub);
+    copy[grade] = list;
+    widget.onChange(widget.data.copyWith(kelasSubclasses: copy));
+  }
+
+  void _addRuang() {
+    final value = _ruanganController.text.trim();
+    if (value.isEmpty) return;
+    if (widget.data.daftarRuang.contains(value)) {
+      ScaffoldMessenger.of(context)
+        ..clearSnackBars()
+        ..showSnackBar(
+          SnackBar(
+            content: Text('Ruang "$value" sudah ada dalam daftar.'),
+            backgroundColor: const Color(0xFFB91C1C),
+          ),
+        );
+      return;
+    }
+    final newList = [...widget.data.daftarRuang, value];
+    widget.onChange(
+      widget.data.copyWith(daftarRuang: newList, jumlahRuang: newList.length),
+    );
+    _ruanganController.clear();
+  }
+
+  void _removeRuang(String ruang) {
+    final newList = widget.data.daftarRuang
+        .where((item) => item != ruang)
+        .toList();
+    widget.onChange(
+      widget.data.copyWith(daftarRuang: newList, jumlahRuang: newList.length),
+    );
   }
 
   @override
@@ -453,7 +457,7 @@ class _FormSekolahState extends State<FormSekolah> {
                     ),
                   ],
                 ),
-                child: const Center(
+                child: Center(
                   child: Icon(Icons.lightbulb, color: Colors.amber, size: 18),
                 ),
               ),
@@ -527,11 +531,11 @@ class _FormSekolahState extends State<FormSekolah> {
 
                   const SizedBox(width: 16),
 
-                  const Expanded(
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
+                        const Text(
                           'Informasi Sekolah',
                           style: TextStyle(
                             fontSize: 20,
@@ -541,9 +545,9 @@ class _FormSekolahState extends State<FormSekolah> {
                           ),
                         ),
 
-                        SizedBox(height: 4),
+                        const SizedBox(height: 4),
 
-                        Text(
+                        const Text(
                           'Lengkapi data sekolah untuk mulai membuat jadwal otomatis.',
                           style: TextStyle(
                             fontSize: 13,
@@ -601,11 +605,14 @@ class _FormSekolahState extends State<FormSekolah> {
                   }).toList(),
                   onChanged: (value) {
                     if (value != null) {
+                      final defaultClasses = value.defaultClasses(count: 6);
                       onChange(
                         data.copyWith(
                           level: value,
-                          kelas: value.defaultClasses(count: 3).first,
-                          kelasList: value.defaultClasses(count: 3),
+                          kelas: defaultClasses.first,
+                          kelasList: defaultClasses,
+                          kelasRooms: {for (var k in defaultClasses) k: []},
+
                           jamMulai: value.defaultStartTime,
                           jamSelesai: value.defaultEndTime,
                           durasiSesi: value.defaultSessionDuration,
@@ -736,6 +743,135 @@ class _FormSekolahState extends State<FormSekolah> {
 
               const SizedBox(height: 18),
 
+              if (data.kelasList.isNotEmpty) ...[
+                _SectionTitle(
+                  iconColor: const Color(0xFFFB7185),
+                  icon: Icons.meeting_room_rounded,
+                  title: 'Ruang per Kelas',
+                  subtitle:
+                      'Pilih ruang yang tersedia untuk setiap kelas. Bisa satu atau lebih.',
+                ),
+                const SizedBox(height: 14),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: data.kelasList.map((kelas) {
+                    final selectedRooms = data.kelasRooms[kelas] ?? [];
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: _GlassField(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 12,
+                        ),
+                        child: MultiSelect(
+                          label: 'Ruang untuk kelas $kelas',
+                          options: data.daftarRuang,
+                          selected: selectedRooms,
+                          isDisabled: (opt) {
+                            // Unique room across classes: a room selected by another class cannot be selected.
+                            for (final entry in data.kelasRooms.entries) {
+                              if (entry.key == kelas) continue;
+                              if ((entry.value).contains(opt)) return true;
+                            }
+                            return false;
+                          },
+                          onChange: (rooms) {
+                            final copy = {...data.kelasRooms};
+                            copy[kelas] = List<String>.from(rooms);
+                            widget.onChange(data.copyWith(kelasRooms: copy));
+                          },
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ],
+
+              const SizedBox(height: 18),
+
+              // Subkelas per kelas (opsional)
+              const SizedBox(height: 8),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: widget.data.kelasList.map((grade) {
+                  final subs = widget.data.kelasSubclasses[grade] ?? [];
+                  final controller = _subControllers.putIfAbsent(
+                    grade,
+                    () => TextEditingController(),
+                  );
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Flexible(
+                              child: Text(
+                                'Subkelas untuk $grade (opsional)',
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Expanded(
+                                    child: Input(
+                                      label: 'Tambah Subkelas',
+                                      value: controller.text,
+                                      onChange: (v) => controller.text = v,
+                                      helperText: 'Contoh: A, B, C',
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  SizedBox(
+                                    height: 44,
+                                    child: ElevatedButton(
+                                      onPressed: () {
+                                        final val = controller.text
+                                            .trim()
+                                            .toUpperCase();
+                                        if (val.isEmpty) return;
+                                        _addSubclass(grade, val);
+                                        controller.clear();
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        minimumSize: const Size(44, 44),
+                                        padding: EdgeInsets.zero,
+                                      ),
+                                      child: const Icon(Icons.add),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: subs.map((s) {
+                            return Chip(
+                              label: Text(s),
+                              onDeleted: () => _removeSubclass(grade, s),
+                            );
+                          }).toList(),
+                        ),
+                      ],
+                    ),
+                  );
+                }).toList(),
+              ),
+
               LayoutBuilder(
                 builder: (context, constraints) {
                   final isMobile = constraints.maxWidth < 620;
@@ -774,6 +910,194 @@ class _FormSekolahState extends State<FormSekolah> {
                       ),
                       child: ElevatedButton(
                         onPressed: _addClass,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.transparent,
+                          shadowColor: Colors.transparent,
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(18),
+                          ),
+                        ),
+                        child: const Text(
+                          'Tambah',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+
+                  if (isMobile) {
+                    return Column(
+                      children: [
+                        Row(children: [inputField]),
+                        const SizedBox(height: 14),
+                        SizedBox(width: double.infinity, child: addButton),
+                      ],
+                    );
+                  }
+
+                  return Row(
+                    children: [
+                      inputField,
+                      const SizedBox(width: 14),
+                      addButton,
+                    ],
+                  );
+                },
+              ),
+
+              const SizedBox(height: 28),
+
+              // ===== DAFTAR RUANG =====
+              _SectionTitle(
+                iconColor: const Color(0xFFF59E0B),
+                icon: Icons.meeting_room_rounded,
+                title: 'Daftar Ruangan',
+                subtitle:
+                    'Tambahkan semua ruang kelas, lab, atau aula yang tersedia.',
+              ),
+
+              const SizedBox(height: 16),
+
+              if (data.daftarRuang.isNotEmpty)
+                Wrap(
+                  spacing: 10,
+                  runSpacing: 10,
+                  children: data.daftarRuang.map((ruang) {
+                    return ClipRRect(
+                      borderRadius: BorderRadius.circular(100),
+                      child: BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 10,
+                          ),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(100),
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.12),
+                            ),
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                Colors.white.withValues(alpha: 0.12),
+                                Colors.white.withValues(alpha: 0.03),
+                              ],
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.08),
+                                blurRadius: 12,
+                                offset: const Offset(0, 6),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                ruang,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 12,
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              InkWell(
+                                borderRadius: BorderRadius.circular(100),
+                                onTap: () => _removeRuang(ruang),
+                                child: Container(
+                                  padding: const EdgeInsets.all(3),
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Colors.white.withValues(alpha: 0.08),
+                                  ),
+                                  child: const Icon(
+                                    Icons.close_rounded,
+                                    color: Colors.white70,
+                                    size: 14,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                )
+              else
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(18),
+                    color: Colors.white.withValues(alpha: 0.05),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.08),
+                    ),
+                  ),
+                  child: const Row(
+                    children: [
+                      Icon(
+                        Icons.info_outline_rounded,
+                        color: Colors.white54,
+                        size: 18,
+                      ),
+                      SizedBox(width: 10),
+                      Text(
+                        'Belum ada ruang ditambahkan.',
+                        style: TextStyle(color: Colors.white70, fontSize: 12),
+                      ),
+                    ],
+                  ),
+                ),
+
+              const SizedBox(height: 18),
+
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final isMobile = constraints.maxWidth < 620;
+
+                  final inputField = Expanded(
+                    child: Input(
+                      label: 'Tambah Ruang',
+                      value: _ruanganController.text,
+                      onChange: (v) {
+                        _ruanganController.text = v;
+                        _ruanganController.selection = TextSelection.collapsed(
+                          offset: v.length,
+                        );
+                      },
+                      helperText: 'Contoh: 1A, 1B, Lab.IPA, Lab.Komputer, Aula',
+                    ),
+                  );
+
+                  final addButton = SizedBox(
+                    height: 58,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(18),
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(
+                              0xFF8B5CF6,
+                            ).withValues(alpha: 0.25),
+                            blurRadius: 18,
+                            offset: const Offset(0, 8),
+                          ),
+                        ],
+                      ),
+                      child: ElevatedButton(
+                        onPressed: _addRuang,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.transparent,
                           shadowColor: Colors.transparent,
@@ -1088,8 +1412,8 @@ class _FormSekolahState extends State<FormSekolah> {
                           const SizedBox(height: 12),
                           Row(
                             children: [
-                              const Expanded(
-                                child: Text(
+                              Expanded(
+                                child: const Text(
                                   'Jam Istirahat',
                                   style: TextStyle(
                                     fontSize: 12,
@@ -1459,14 +1783,16 @@ class FormMapel extends StatefulWidget {
 
 class _FormMapelState extends State<FormMapel> {
   void add() {
+    final defaultKelas = widget.school.availableGrades.isNotEmpty
+        ? widget.school.availableGrades.first
+        : '10';
+
     final newData = List<Subject>.from(widget.data)
       ..add(
         Subject(
           id: UniqueKey().hashCode,
           nama: '',
-          kelas: widget.school.availableGrades.isNotEmpty
-              ? widget.school.availableGrades.first
-              : '1-A',
+          kelas: [defaultKelas],
           jamPerMinggu: 2,
           guru: '',
           durasiPerSesi: widget.school.level.defaultSessionDuration,
@@ -1489,7 +1815,7 @@ class _FormMapelState extends State<FormMapel> {
               return x.copyWith(nama: val);
 
             case 'kelas':
-              return x.copyWith(kelas: val);
+              return x.copyWith(kelas: List<String>.from(val));
 
             case 'jamPerMinggu':
               return x.copyWith(jamPerMinggu: val);
@@ -1622,42 +1948,28 @@ class _FormMapelState extends State<FormMapel> {
                         ),
 
                         _GlassField(
-                          padding: const EdgeInsets.symmetric(horizontal: 14),
-                          child: DropdownButton<String>(
-                            value:
-                                widget.school.availableGrades.contains(m.kelas)
-                                ? m.kelas
-                                : widget.school.availableGrades.isNotEmpty
-                                ? widget.school.availableGrades.first
-                                : m.kelas,
-                            isExpanded: true,
-                            underline: const SizedBox(),
-                            borderRadius: BorderRadius.circular(20),
-                            dropdownColor: const Color(0xFF111827),
-                            icon: const Icon(
-                              Icons.keyboard_arrow_down_rounded,
-                              color: Colors.white70,
-                            ),
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w600,
-                            ),
-                            items: widget.school.availableGrades.map((grade) {
-                              return DropdownMenuItem(
-                                value: grade,
-                                child: Text(
-                                  grade,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 12,
+                          ),
+                          child: MultiSelect(
+                            label: 'Pilih section (contoh: 10, 11)',
+                            options: widget.school.availableGrades,
+                            selected: m.kelas
+                                .where((x) => x.isNotEmpty)
+                                .toList(),
+                            onChange: (v) {
+                              final newSections = List<String>.from(v);
+                              widget.onChange(
+                                widget.data.map((x) {
+                                  if (x.id != m.id) return x;
+                                  return x.copyWith(kelas: newSections);
+                                }).toList(),
                               );
-                            }).toList(),
-                            onChanged: (value) {
-                              if (value != null) {
-                                update(m.id, 'kelas', value);
-                              }
                             },
                           ),
                         ),
+                        const SizedBox(height: 12),
                       ],
                     );
 
@@ -1753,11 +2065,14 @@ class _FormMapelState extends State<FormMapel> {
                         ] else ...[
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [Expanded(flex: 2, child: kelasField)],
+                          ),
+
+                          const SizedBox(height: 18),
+
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Expanded(flex: 2, child: kelasField),
-
-                              const SizedBox(width: 16),
-
                               Expanded(child: jamField),
 
                               const SizedBox(width: 16),
@@ -2026,12 +2341,17 @@ class MultiSelect extends StatelessWidget {
   final List<String> selected;
   final Function(List<String>) onChange;
 
+  /// If provided, option will be shown as disabled when isDisabled(opt) == true.
+  /// Disabled options cannot be toggled.
+  final bool Function(String opt)? isDisabled;
+
   const MultiSelect({
     super.key,
     required this.label,
     required this.options,
     required this.selected,
     required this.onChange,
+    this.isDisabled,
   });
 
   @override
@@ -2056,18 +2376,22 @@ class MultiSelect extends StatelessWidget {
           children: options.map((opt) {
             final selectedItem = selected.contains(opt);
 
+            final disabled = (isDisabled?.call(opt) ?? false) && !selectedItem;
             return InkWell(
-              onTap: () {
-                final newList = List<String>.from(selected);
+              onTap: disabled
+                  ? null
+                  : () {
+                      final newList = List<String>.from(selected);
 
-                if (selectedItem) {
-                  newList.remove(opt);
-                } else {
-                  newList.add(opt);
-                }
+                      if (selectedItem) {
+                        newList.remove(opt);
+                      } else {
+                        newList.add(opt);
+                      }
 
-                onChange(newList);
-              },
+                      onChange(newList);
+                    },
+
               borderRadius: BorderRadius.circular(14),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 220),
@@ -2096,7 +2420,9 @@ class MultiSelect extends StatelessWidget {
                     fontWeight: FontWeight.w700,
                     color: selectedItem
                         ? Colors.white
-                        : Colors.white.withValues(alpha: 0.5),
+                        : (disabled
+                              ? Colors.white.withValues(alpha: 0.25)
+                              : Colors.white.withValues(alpha: 0.5)),
                   ),
                 ),
               ),
@@ -2420,7 +2746,7 @@ class SliderCard extends StatelessWidget {
   }
 }
 
-// --- FORM GURU ---
+// --- FORM GURU
 class FormGuru extends StatefulWidget {
   final List<Teacher> data;
   final Function(List<Teacher>) onChange;
@@ -2544,10 +2870,10 @@ class _FormGuruState extends State<FormGuru> {
 
                     const SizedBox(width: 14),
 
-                    const Expanded(
+                    Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
+                        children: const [
                           Text(
                             'Detail Pengajar',
                             style: TextStyle(
@@ -2704,15 +3030,49 @@ class _FormGuruState extends State<FormGuru> {
 }
 
 // --- FORM CONSTRAINTS & CONFIG ---
-class FormConstraints extends StatelessWidget {
+class FormConstraints extends StatefulWidget {
   final Constraints data;
   final Function(Constraints) onChange;
+  final List<String> classOptions;
+  final List<String> roomOptions;
 
   const FormConstraints({
     super.key,
     required this.data,
     required this.onChange,
+    required this.classOptions,
+    required this.roomOptions,
   });
+
+  @override
+  State<FormConstraints> createState() => _FormConstraintsState();
+}
+
+class _FormConstraintsState extends State<FormConstraints> {
+  late String _selectedClass;
+  late String _selectedRoom;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedClass = widget.classOptions.isNotEmpty
+        ? widget.classOptions.first
+        : '';
+    _selectedRoom = widget.roomOptions.isNotEmpty
+        ? widget.roomOptions.first
+        : '';
+  }
+
+  @override
+  void didUpdateWidget(covariant FormConstraints oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.classOptions.isNotEmpty && !_selectedClass.isNotEmpty) {
+      _selectedClass = widget.classOptions.first;
+    }
+    if (widget.roomOptions.isNotEmpty && !_selectedRoom.isNotEmpty) {
+      _selectedRoom = widget.roomOptions.first;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -2729,9 +3089,10 @@ class FormConstraints extends StatelessWidget {
                 SizedBox(
                   width: isMobile ? (constraints.maxWidth - 12) / 2 : 220,
                   child: ToggleCard(
-                    checked: data.guruTidakBentrok,
-                    onChange: (v) =>
-                        onChange(data.copyWith(guruTidakBentrok: v)),
+                    checked: widget.data.guruTidakBentrok,
+                    onChange: (v) => widget.onChange(
+                      widget.data.copyWith(guruTidakBentrok: v),
+                    ),
                     label: 'Guru No Bentrok',
                   ),
                 ),
@@ -2739,9 +3100,10 @@ class FormConstraints extends StatelessWidget {
                 SizedBox(
                   width: isMobile ? (constraints.maxWidth - 12) / 2 : 220,
                   child: ToggleCard(
-                    checked: data.kelasTidakBentrok,
-                    onChange: (v) =>
-                        onChange(data.copyWith(kelasTidakBentrok: v)),
+                    checked: widget.data.kelasTidakBentrok,
+                    onChange: (v) => widget.onChange(
+                      widget.data.copyWith(kelasTidakBentrok: v),
+                    ),
                     label: 'Kelas No Bentrok',
                   ),
                 ),
@@ -2749,9 +3111,10 @@ class FormConstraints extends StatelessWidget {
                 SizedBox(
                   width: isMobile ? (constraints.maxWidth - 12) / 2 : 220,
                   child: ToggleCard(
-                    checked: data.ruangTidakBentrok,
-                    onChange: (v) =>
-                        onChange(data.copyWith(ruangTidakBentrok: v)),
+                    checked: widget.data.ruangTidakBentrok,
+                    onChange: (v) => widget.onChange(
+                      widget.data.copyWith(ruangTidakBentrok: v),
+                    ),
                     label: 'Ruang No Bentrok',
                   ),
                 ),
@@ -2759,31 +3122,54 @@ class FormConstraints extends StatelessWidget {
                 SizedBox(
                   width: isMobile ? (constraints.maxWidth - 12) / 2 : 220,
                   child: ToggleCard(
-                    checked: data.hindariJamKosong,
-                    onChange: (v) =>
-                        onChange(data.copyWith(hindariJamKosong: v)),
+                    checked: widget.data.hindariJamKosong,
+                    onChange: (v) => widget.onChange(
+                      widget.data.copyWith(hindariJamKosong: v),
+                    ),
                     label: 'Minim Jam Kosong',
+                  ),
+                ),
+
+                SizedBox(
+                  width: isMobile ? (constraints.maxWidth - 12) / 2 : 220,
+                  child: ToggleCard(
+                    checked: widget.data.fixedClassEnabled,
+                    onChange: (v) => widget.onChange(
+                      widget.data.copyWith(fixedClassEnabled: v),
+                    ),
+                    label: 'Fixed Class (Kelas -> Ruang)',
                   ),
                 ),
               ],
             );
           },
         ),
+        // Disabled Fixed Class Rules editor (not present in this file right now)
+        // to avoid build errors.
+        if (widget.data.fixedClassEnabled) ...[
+          const SizedBox(height: 12),
+          const Text(
+            'Fixed Class is enabled. (Rules editor not available yet)',
+            style: TextStyle(color: Color(0xFFBFC7FF), fontSize: 12),
+          ),
+        ],
         const SizedBox(height: 20),
         SliderCard(
           label: 'Maks Pelajaran Berat / Hari',
-          value: data.maxBeratPerHari.toDouble(),
+          value: widget.data.maxBeratPerHari.toDouble(),
           min: 1,
           max: 5,
-          onChange: (v) => onChange(data.copyWith(maxBeratPerHari: v.toInt())),
+          onChange: (v) =>
+              widget.onChange(widget.data.copyWith(maxBeratPerHari: v.toInt())),
         ),
         const SizedBox(height: 12),
         SliderCard(
           label: 'Maks Pelajaran Berturut-turut',
-          value: data.maxBerturutan.toDouble(),
+          value: widget.data.maxBerturutan.toDouble(),
           min: 1,
           max: 6,
-          onChange: (v) => onChange(data.copyWith(maxBerturutan: v.toInt())),
+          onChange: (v) =>
+              widget.onChange(widget.data.copyWith(maxBerturutan: v.toInt())),
         ),
         const SizedBox(height: 18),
         SizedBox(
@@ -2791,14 +3177,16 @@ class FormConstraints extends StatelessWidget {
           child: ElevatedButton.icon(
             onPressed: () {
               // Terapkan rumus/rekomendasi terbaik sederhana untuk constraints
-              onChange(
-                data.copyWith(
+              widget.onChange(
+                widget.data.copyWith(
                   guruTidakBentrok: true,
                   kelasTidakBentrok: true,
                   ruangTidakBentrok: true,
                   hindariJamKosong: true,
                   maxBeratPerHari: 2,
                   maxBerturutan: 3,
+                  fixedClassEnabled: widget.data.fixedClassEnabled,
+                  fixedClassToRoom: widget.data.fixedClassToRoom,
                 ),
               );
             },

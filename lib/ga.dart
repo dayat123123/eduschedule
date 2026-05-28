@@ -93,20 +93,30 @@ List<Gene> createRandomChromosome(
   List<Subject> mapel,
   List<String> hariAktif,
   List<String> timeSlots,
-  int jumlahRuang,
+  List<String> daftarRuang,
+  Map<String, List<String>> kelasRooms,
 ) {
   final genes = <Gene>[];
   for (final m in mapel) {
     for (int i = 0; i < m.jamPerMinggu; i++) {
+      final selectedKelas = m.kelas.isNotEmpty
+          ? m.kelas[Random().nextInt(m.kelas.length)]
+          : '';
+      final classRoomOptions = kelasRooms[selectedKelas] ?? [];
+      final availableRooms = classRoomOptions.isNotEmpty
+          ? classRoomOptions
+          : daftarRuang;
+      if (availableRooms.isEmpty) continue;
+
       genes.add(
         Gene(
           mapelId: m.id,
           mapelNama: m.nama,
-          kelas: m.kelas,
+          kelas: selectedKelas,
           guru: m.guru,
           hari: hariAktif[Random().nextInt(hariAktif.length)],
           slot: timeSlots[Random().nextInt(timeSlots.length)],
-          ruang: Random().nextInt(jumlahRuang) + 1,
+          ruang: availableRooms[Random().nextInt(availableRooms.length)],
         ),
       );
     }
@@ -285,11 +295,21 @@ List<Gene> mutate(
   double mutationRate,
   List<String> hariAktif,
   List<String> timeSlots,
-  int jumlahRuang,
+  List<String> daftarRuang,
+  Map<String, List<String>> sekolahKelasRooms,
 ) {
   return chromosome.map((gene) {
     if (Random().nextDouble() < mutationRate) {
       final r = Random().nextDouble();
+      final selectedKelas = gene.kelas;
+      final classRoomOptions = sekolahKelasRooms[selectedKelas] ?? [];
+      final availableRooms = classRoomOptions.isNotEmpty
+          ? classRoomOptions
+          : daftarRuang;
+      final roomChoice = availableRooms.isNotEmpty
+          ? availableRooms[Random().nextInt(availableRooms.length)]
+          : gene.ruang;
+
       if (r < 0.33) {
         return Gene(
           mapelId: gene.mapelId,
@@ -318,7 +338,7 @@ List<Gene> mutate(
           guru: gene.guru,
           hari: gene.hari,
           slot: gene.slot,
-          ruang: Random().nextInt(jumlahRuang) + 1,
+          ruang: roomChoice,
         );
       }
     }
@@ -346,7 +366,8 @@ Future<GAResult> runGeneticAlgorithm(
       mapel,
       school.hariAktif,
       timeSlots,
-      school.jumlahRuang,
+      school.daftarRuang,
+      school.kelasRooms,
     ),
   );
 
@@ -418,7 +439,8 @@ Future<GAResult> runGeneticAlgorithm(
           mutationRate,
           school.hariAktif,
           timeSlots,
-          school.jumlahRuang,
+          school.daftarRuang,
+          school.kelasRooms,
         ),
       );
     }

@@ -46,6 +46,8 @@ class _EduScheduleAppState extends State<EduScheduleApp> {
     prioritasPreferensiGuru: true,
     maxBeratPerHari: 2,
     maxBerturutan: 3,
+    fixedClassEnabled: false,
+    fixedClassToRoom: {},
   );
   GAConfig gaConfig = GAConfig(
     populationSize: 50,

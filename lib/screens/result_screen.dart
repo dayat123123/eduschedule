@@ -1256,7 +1256,7 @@ class ScheduleTable extends StatelessWidget {
 
                                       _infoRow(
                                         Icons.meeting_room_rounded,
-                                        'Ruang ${s.ruang}',
+                                        s.ruang,
                                       ),
                                     ],
                                   ),

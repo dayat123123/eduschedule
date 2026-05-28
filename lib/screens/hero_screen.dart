@@ -453,19 +453,19 @@ class _HeroScreenState extends State<HeroScreen> {
             //             runSpacing: 28,
             //             alignment: WrapAlignment.center,
             //             children: [
-            //               _StatWidget(
+            //               StatWidget(
             //                 number: currentStats.formattedTotalProcessed,
             //                 label: 'Total Jadwal Sukses',
             //               ),
-            //               _StatWidget(
+            //               StatWidget(
             //                 number: currentStats.formattedOptimization,
             //                 label: 'Jam Guru Teroptimasi',
             //               ),
-            //               _StatWidget(
+            //               StatWidget(
             //                 number: currentStats.formattedConflicts,
             //                 label: 'Bentrok Jadwal',
             //               ),
-            //               _StatWidget(
+            //               StatWidget(
             //                 number: currentStats
             //                     .formattedScenarios, // Menukar kuota Alternatif Jadwal dengan ini
             //                 label: 'Skenario Teranalisis',
@@ -1084,40 +1084,6 @@ class _HeroScreenState extends State<HeroScreen> {
           ),
         ],
       ),
-    );
-  }
-}
-
-class _StatWidget extends StatelessWidget {
-  final String number;
-  final String label;
-
-  const _StatWidget({required this.number, required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          number,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 32,
-            fontWeight: FontWeight.w900,
-            letterSpacing: -0.5,
-          ),
-        ),
-        const SizedBox(height: 6),
-        Text(
-          label,
-          style: const TextStyle(
-            color: AppColors.accentPurpleLight,
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ],
     );
   }
 }

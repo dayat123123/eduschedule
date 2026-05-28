@@ -122,6 +122,8 @@ class _FormScreenState extends State<FormScreen> {
         return FormConstraints(
           data: widget.constraints,
           onChange: widget.onConstraintsChange,
+          classOptions: widget.school.kelasList,
+          roomOptions: widget.school.daftarRuang,
         );
 
       case 4:
@@ -265,6 +267,7 @@ class _FormScreenState extends State<FormScreen> {
   }
 
   String? _validateMapel(List<Subject> data) {
+    // Validasi Mapel: pastikan semua mapel memiliki nama, kelas terpilih, guru, dan jam
     if (data.isEmpty) {
       return 'Tambahkan minimal 1 mata pelajaran.';
     }
@@ -282,9 +285,11 @@ class _FormScreenState extends State<FormScreen> {
       if (item.nama.trim().isEmpty) {
         return 'Nama mapel kosong (Mapel #${i + 1}).';
       }
-
-      if (item.kelas.trim().isEmpty) {
-        return 'Kelas kosong (Mapel #${i + 1}).';
+      if (item.kelas.isEmpty) {
+        return 'Pilih minimal 1 kelas untuk Mapel #${i + 1}.';
+      }
+      if (item.kelas.any((k) => k.trim().isEmpty)) {
+        return 'Nama kelas tidak boleh kosong (Mapel #${i + 1}).';
       }
 
       if (item.jamPerMinggu <= 0) {
@@ -299,12 +304,13 @@ class _FormScreenState extends State<FormScreen> {
         return 'Guru pengajar wajib diisi.';
       }
 
-      final dupKey = '${norm(item.nama)}|${norm(item.kelas)}';
+      final kelasKey = item.kelas.join(',');
+      final dupKey = '${norm(item.nama)}|${norm(kelasKey)}';
 
       for (int j = i + 1; j < data.length; j++) {
         final other = data[j];
 
-        final otherKey = '${norm(other.nama)}|${norm(other.kelas)}';
+        final otherKey = '${norm(other.nama)}|${norm(other.kelas.join(','))}';
 
         if (dupKey == otherKey) {
           return 'Mapel duplikat ditemukan.';
@@ -453,7 +459,6 @@ class _FormScreenState extends State<FormScreen> {
   void _handleNextStep(int targetStep) {
     if (targetStep > widget.step) {
       final error = _validateStep(widget.step);
-
       if (error != null) {
         _showError(error);
         return;
@@ -764,6 +769,7 @@ class _FormScreenState extends State<FormScreen> {
                                             ),
                                             child: const Text(
                                               'Lanjut →',
+
                                               style: TextStyle(
                                                 color: Colors.white,
                                                 fontSize: 16,
@@ -836,11 +842,16 @@ class _FormScreenState extends State<FormScreen> {
                                     if (i < widget.step) {
                                       widget.onStepChange(i);
                                     } else if (i > widget.step) {
-                                      final error = _validateStep(widget.step);
+                                      // Custom: langkah Mapel (index 1) tidak boleh nge-block navigasi.
+                                      if (widget.step != 1) {
+                                        final error = _validateStep(
+                                          widget.step,
+                                        );
 
-                                      if (error != null) {
-                                        _showError(error);
-                                        return;
+                                        if (error != null) {
+                                          _showError(error);
+                                          return;
+                                        }
                                       }
 
                                       widget.onStepChange(i);

@@ -23,20 +23,64 @@ enum SchoolLevel {
   final String defaultEndTime;
   final int defaultClassrooms;
 
+  // Mengubah angka tingkatan menjadi string (Romawi untuk SMP/SMA, Angka Biasa untuk SD)
+  String _formatGrade(int grade) {
+    if (this == SchoolLevel.sd) {
+      return grade.toString(); // Output: "1", "2", dst.
+    } else {
+      return _toRoman(grade); // Output: "VII", "X", dst.
+    }
+  }
+
+  // SEKARANG HANYA MENGHASILKAN DAFTAR TINGKATAN SAJA (Contoh: ["1", "2", ...], ["VII", "VIII", ...])
   List<String> get gradeClasses {
     final classes = <String>[];
     for (int grade = minGrade; grade <= maxGrade; grade++) {
-      for (String letter in ['A', 'B', 'C', 'D', 'E', 'F']) {
-        classes.add('$grade-$letter');
-      }
+      classes.add(_formatGrade(grade));
     }
     return classes;
   }
 
+  // SEKARANG MENGHASILKAN DAFTAR TINGKATAN SESUAI DENGAN JUMLAH YANG DIMINTA
   List<String> defaultClasses({int count = 3}) {
-    final letters = ['A', 'B', 'C', 'D', 'E', 'F'];
-    final useCount = count.clamp(1, letters.length);
-    return List.generate(useCount, (index) => '$minGrade-${letters[index]}');
+    final classes = <String>[];
+    for (int grade = minGrade; grade <= maxGrade; grade++) {
+      classes.add(_formatGrade(grade));
+    }
+    // Mengambil sebanyak jumlah 'count' yang diminta, atau sebanyak tingkatan yang tersedia
+    return classes.take(count).toList();
+  }
+
+  // Fungsi pembantu konversi ke Romawi
+  static String _toRoman(int number) {
+    if (number <= 0) return '';
+    final map = <int, String>{
+      1000: 'M',
+      900: 'CM',
+      500: 'D',
+      400: 'CD',
+      100: 'C',
+      90: 'XC',
+      50: 'L',
+      40: 'XL',
+      10: 'X',
+      9: 'IX',
+      5: 'V',
+      4: 'IV',
+      1: 'I',
+    };
+
+    var n = number;
+    final out = <String>[];
+    for (final entry in map.entries) {
+      final value = entry.key;
+      while (n >= value) {
+        out.add(entry.value);
+        n -= value;
+      }
+    }
+
+    return out.join();
   }
 
   List<String> get coreSubjects {
@@ -93,11 +137,11 @@ enum SchoolLevel {
   int get typicalSessionsPerDay {
     switch (this) {
       case SchoolLevel.sd:
-        return 5; // Shorter days for elementary
+        return 5;
       case SchoolLevel.smp:
-        return 6; // Medium length
+        return 6;
       case SchoolLevel.sma:
-        return 7; // Longer days for high school
+        return 7;
     }
   }
 
@@ -163,6 +207,8 @@ class School {
   SchoolLevel level;
   String kelas;
   List<String> kelasList;
+  Map<String, List<String>> kelasSubclasses;
+  Map<String, List<String>> kelasRooms;
   int jumlahHari;
   List<String> hariAktif;
   String jamMulai;
@@ -175,12 +221,15 @@ class School {
   List<int> durasiSesiList;
   bool samaDurasiSesi;
   int jumlahRuang;
+  List<String> daftarRuang;
 
   School({
     required this.nama,
     required this.level,
     required this.kelas,
     required this.kelasList,
+    required this.kelasSubclasses,
+    required this.kelasRooms,
     required this.jumlahHari,
     required this.hariAktif,
     required this.jamMulai,
@@ -193,6 +242,7 @@ class School {
     required this.durasiSesiList,
     required this.samaDurasiSesi,
     required this.jumlahRuang,
+    required this.daftarRuang,
   });
 
   School copyWith({
@@ -200,6 +250,8 @@ class School {
     SchoolLevel? level,
     String? kelas,
     List<String>? kelasList,
+    Map<String, List<String>>? kelasSubclasses,
+    Map<String, List<String>>? kelasRooms,
     int? jumlahHari,
     List<String>? hariAktif,
     String? jamMulai,
@@ -212,17 +264,21 @@ class School {
     List<int>? durasiSesiList,
     bool? samaDurasiSesi,
     int? jumlahRuang,
+    List<String>? daftarRuang,
   }) {
     final effectiveKelasList = kelasList ?? this.kelasList;
     final effectiveKelas =
         kelas ??
         (effectiveKelasList.isNotEmpty ? effectiveKelasList.first : this.kelas);
+    final effectiveKelasSubclasses = kelasSubclasses ?? this.kelasSubclasses;
 
     return School(
       nama: nama ?? this.nama,
       level: level ?? this.level,
       kelas: effectiveKelas,
       kelasList: effectiveKelasList,
+      kelasSubclasses: effectiveKelasSubclasses,
+      kelasRooms: kelasRooms ?? this.kelasRooms,
       jumlahHari: jumlahHari ?? this.jumlahHari,
       hariAktif: hariAktif ?? this.hariAktif,
       jamMulai: jamMulai ?? this.jamMulai,
@@ -235,6 +291,7 @@ class School {
       durasiSesiList: durasiSesiList ?? this.durasiSesiList,
       samaDurasiSesi: samaDurasiSesi ?? this.samaDurasiSesi,
       jumlahRuang: jumlahRuang ?? this.jumlahRuang,
+      daftarRuang: daftarRuang ?? this.daftarRuang,
     );
   }
 
@@ -347,7 +404,11 @@ class School {
 class Subject {
   int id;
   String nama;
-  String kelas;
+
+  /// Section class mapel (contoh: "10", "11", "12").
+  /// UI multi-select menyimpan ini di sini.
+  List<String> kelas;
+
   int jamPerMinggu;
   String guru;
   int durasiPerSesi; // dalam menit
@@ -364,7 +425,7 @@ class Subject {
   Subject copyWith({
     int? id,
     String? nama,
-    String? kelas,
+    List<String>? kelas,
     int? jamPerMinggu,
     String? guru,
     int? durasiPerSesi,
@@ -423,7 +484,7 @@ class Gene {
   String guru;
   String hari;
   String slot;
-  int ruang;
+  String ruang;
 
   Gene({
     required this.mapelId,
@@ -445,6 +506,13 @@ class Constraints {
   int maxBeratPerHari;
   int maxBerturutan;
 
+  /// Jika enabled: setiap kelas harus selalu memakai [fixedClassToRoom] yang sesuai.
+  ///
+  /// Key: kelas (contoh: "10-A")
+  /// Value: nama ruangan (contoh: "Ruang 1")
+  bool fixedClassEnabled;
+  Map<String, String> fixedClassToRoom;
+
   Constraints({
     required this.guruTidakBentrok,
     required this.kelasTidakBentrok,
@@ -453,6 +521,8 @@ class Constraints {
     required this.prioritasPreferensiGuru,
     required this.maxBeratPerHari,
     required this.maxBerturutan,
+    required this.fixedClassEnabled,
+    required this.fixedClassToRoom,
   });
 
   Constraints copyWith({
@@ -463,6 +533,8 @@ class Constraints {
     bool? prioritasPreferensiGuru,
     int? maxBeratPerHari,
     int? maxBerturutan,
+    bool? fixedClassEnabled,
+    Map<String, String>? fixedClassToRoom,
   }) {
     return Constraints(
       guruTidakBentrok: guruTidakBentrok ?? this.guruTidakBentrok,
@@ -473,6 +545,8 @@ class Constraints {
           prioritasPreferensiGuru ?? this.prioritasPreferensiGuru,
       maxBeratPerHari: maxBeratPerHari ?? this.maxBeratPerHari,
       maxBerturutan: maxBerturutan ?? this.maxBerturutan,
+      fixedClassEnabled: fixedClassEnabled ?? this.fixedClassEnabled,
+      fixedClassToRoom: fixedClassToRoom ?? this.fixedClassToRoom,
     );
   }
 }

@@ -1,36 +1,10 @@
-# TODO - Eduschedule (penyesuaian kebutuhan sekolah umum Indonesia)
+# TODO
 
-## Plan yang akan dikerjakan
+## Subclass per Mapel + validasi step
 
-### 1) Perbaiki GA supaya constraint UI benar-benar dipakai
+- [x] Update `FormMapel` UI: tambahkan tombol "Tambah Subclass" yang benar per mapel, per section kelas, dan simpan ke `Subject.subclassesBySection`.
+- [ ] Sinkronkan `m.kelas` (MultiSelect) dengan `subclassesBySection` (hapus key yang tidak dipilih, buat key baru kalau ada).
+- [ ] Perbaiki inisialisasi `Subject` saat ditambah di `FormMapel.add()` agar `subclassesBySection` siap sesuai section kelas.
+- [ ] Update validasi perpindahan step di `FormScreen`: langkah Mapel tidak boleh nge-block navigasi ke step lain jika mapel masih kosong (tapi Generate tetap memvalidasi semuanya).
 
-- [ ] Update `runGeneticAlgorithm` agar menerima `Constraints constraints`
-- [ ] Implement fitness untuk:
-  - [ ] guru no bentrok (bentrok slot)
-  - [ ] kelas no bentrok (bentrok slot)
-  - [ ] ruang no bentrok (bentrok slot)
-  - [ ] preferensi hari guru
-  - [ ] `Teacher.maxJamPerHari`
-  - [ ] minim jam kosong (gap) per kelas per hari
-  - [ ] (jika perlu) max mapel berturut-turut & berat per hari sesuai data yang tersedia
-- [ ] Pastikan toggles `Constraints` benar-benar mengaktifkan/menonaktifkan rule
-
-### 2) Ubah tampilan hasil menjadi tabel jadwal (jam sebagai kolom) per kelas
-
-- [ ] Tambahkan mode tampilan default: “Tabel per Kelas”
-- [ ] Definisikan header slot waktu dari `generateTimeSlots(school)`
-- [ ] Implement render grid: baris = hari, kolom = slot
-- [ ] Isi cell: mapel + guru + ruang (atau minimal mapel, lalu detail via tooltip/card)
-- [ ] Pastikan filter kelas/guru/hari tetap berfungsi
-
-### 3) Bonus: Auto Tambah Mapel Wajib untuk jenjang SD/SMP/SMA
-
-- [ ] Tambahkan tombol di FormMapel: “Auto Tambah Mapel Wajib”
-- [ ] Map pelajaran wajib dari `SchoolLevel.coreSubjects`
-- [ ] Isi awal `jamPerMinggu` default (sementara) atau allow override manual
-- [ ] Pastikan kelas/rombel yang dipilih menjadi target subject
-
-## Setelah itu
-
-- [ ] Jalankan `flutter analyze`
-- [ ] Jalankan build web (opsional) `flutter build web`
+- [ ] Jalankan `flutter analyze` dan `flutter run` untuk memastikan tidak ada error.

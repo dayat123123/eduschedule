@@ -1,10 +1,20 @@
 import 'models.dart';
 
+List<String> gradeNumbers(SchoolLevel level) {
+  return [for (int g = level.minGrade; g <= level.maxGrade; g++) g.toString()];
+}
+
 final dummySchool = School(
   nama: "SMA Negeri 1 Nusantara",
   level: SchoolLevel.sma,
-  kelas: "10-A",
-  kelasList: SchoolLevel.sma.defaultClasses(count: 3),
+  kelas: "10",
+  kelasList: ['10', '11', '12'],
+  kelasSubclasses: {
+    for (var k in ['10', '11', '12']) k: [],
+  },
+  kelasRooms: {
+    for (var k in ['10', '11', '12']) k: [],
+  },
   jumlahHari: 5,
   hariAktif: ["Senin", "Selasa", "Rabu", "Kamis", "Jumat"],
   jamMulai: "07:00",
@@ -39,14 +49,17 @@ final dummySchool = School(
 
   durasiSesiList: [],
   samaDurasiSesi: true,
-  jumlahRuang: 12,
+  jumlahRuang: 6,
+  daftarRuang: [for (int i = 1; i <= 6; i++) 'Ruang $i'],
 );
 
 final dummySchoolSD = School(
   nama: "SD Negeri 1 Jakarta",
   level: SchoolLevel.sd,
-  kelas: "1-A",
+  kelas: "1",
   kelasList: SchoolLevel.sd.defaultClasses(count: 3),
+  kelasSubclasses: {for (var k in gradeNumbers(SchoolLevel.sd)) k: []},
+  kelasRooms: {for (var k in gradeNumbers(SchoolLevel.sd)) k: []},
   jumlahHari: 5,
   hariAktif: ["Senin", "Selasa", "Rabu", "Kamis", "Jumat"],
   jamMulai: "07:00",
@@ -69,13 +82,16 @@ final dummySchoolSD = School(
   durasiSesiList: [],
   samaDurasiSesi: true,
   jumlahRuang: 6,
+  daftarRuang: [for (int i = 1; i <= 6; i++) 'Ruang $i'],
 );
 
 final dummySchoolSMP = School(
   nama: "SMP Negeri 2 Bandung",
   level: SchoolLevel.smp,
-  kelas: "7-A",
+  kelas: "7",
   kelasList: SchoolLevel.smp.defaultClasses(count: 3),
+  kelasSubclasses: {for (var k in gradeNumbers(SchoolLevel.smp)) k: []},
+  kelasRooms: {for (var k in gradeNumbers(SchoolLevel.smp)) k: []},
   jumlahHari: 5,
   hariAktif: ["Senin", "Selasa", "Rabu", "Kamis", "Jumat"],
 
@@ -113,14 +129,15 @@ final dummySchoolSMP = School(
 
   durasiSesiList: [],
   samaDurasiSesi: true,
-  jumlahRuang: 8,
+  jumlahRuang: 6,
+  daftarRuang: [for (int i = 1; i <= 6; i++) 'Ruang $i'],
 );
 
 final List<Subject> dummyMapel = [
   Subject(
     id: 1,
     nama: "Matematika",
-    kelas: "10-A",
+    kelas: gradeNumbers(SchoolLevel.sma),
     jamPerMinggu: 4,
     guru: "Budi Santoso",
     durasiPerSesi: 45,
@@ -128,7 +145,7 @@ final List<Subject> dummyMapel = [
   Subject(
     id: 2,
     nama: "Fisika",
-    kelas: "10-A",
+    kelas: gradeNumbers(SchoolLevel.sma),
     jamPerMinggu: 3,
     guru: "Siti Rahayu",
     durasiPerSesi: 45,
@@ -136,7 +153,7 @@ final List<Subject> dummyMapel = [
   Subject(
     id: 3,
     nama: "Kimia",
-    kelas: "10-A",
+    kelas: gradeNumbers(SchoolLevel.sma),
     jamPerMinggu: 3,
     guru: "Ahmad Fauzi",
     durasiPerSesi: 45,
@@ -144,7 +161,7 @@ final List<Subject> dummyMapel = [
   Subject(
     id: 4,
     nama: "Bahasa Indonesia",
-    kelas: "10-A",
+    kelas: gradeNumbers(SchoolLevel.sma),
     jamPerMinggu: 4,
     guru: "Dewi Lestari",
     durasiPerSesi: 45,
@@ -152,7 +169,7 @@ final List<Subject> dummyMapel = [
   Subject(
     id: 5,
     nama: "Bahasa Inggris",
-    kelas: "10-A",
+    kelas: gradeNumbers(SchoolLevel.sma),
     jamPerMinggu: 4,
     guru: "Rini Wulandari",
     durasiPerSesi: 45,
@@ -160,7 +177,7 @@ final List<Subject> dummyMapel = [
   Subject(
     id: 6,
     nama: "Biologi",
-    kelas: "10-B",
+    kelas: gradeNumbers(SchoolLevel.sma),
     jamPerMinggu: 3,
     guru: "Hendra Kurniawan",
     durasiPerSesi: 45,
@@ -168,7 +185,7 @@ final List<Subject> dummyMapel = [
   Subject(
     id: 7,
     nama: "Sejarah",
-    kelas: "10-B",
+    kelas: gradeNumbers(SchoolLevel.sma),
     jamPerMinggu: 2,
     guru: "Agus Priyanto",
     durasiPerSesi: 45,
@@ -183,7 +200,7 @@ List<Subject> getDummySubjectsForLevel(SchoolLevel level) {
         Subject(
           id: 1,
           nama: "Bahasa Indonesia",
-          kelas: "1-A",
+          kelas: gradeNumbers(SchoolLevel.sd),
           jamPerMinggu: 6,
           guru: "Ibu Siti",
           durasiPerSesi: 35,
@@ -191,7 +208,7 @@ List<Subject> getDummySubjectsForLevel(SchoolLevel level) {
         Subject(
           id: 2,
           nama: "Matematika",
-          kelas: "1-A",
+          kelas: gradeNumbers(SchoolLevel.sd),
           jamPerMinggu: 5,
           guru: "Pak Budi",
           durasiPerSesi: 35,
@@ -199,7 +216,7 @@ List<Subject> getDummySubjectsForLevel(SchoolLevel level) {
         Subject(
           id: 3,
           nama: "IPA",
-          kelas: "1-A",
+          kelas: gradeNumbers(SchoolLevel.sd),
           jamPerMinggu: 4,
           guru: "Bu Rina",
           durasiPerSesi: 35,
@@ -207,7 +224,7 @@ List<Subject> getDummySubjectsForLevel(SchoolLevel level) {
         Subject(
           id: 4,
           nama: "IPS",
-          kelas: "1-A",
+          kelas: gradeNumbers(SchoolLevel.sd),
           jamPerMinggu: 3,
           guru: "Pak Ahmad",
           durasiPerSesi: 35,
@@ -215,7 +232,7 @@ List<Subject> getDummySubjectsForLevel(SchoolLevel level) {
         Subject(
           id: 5,
           nama: "Bahasa Inggris",
-          kelas: "1-A",
+          kelas: gradeNumbers(SchoolLevel.sd),
           jamPerMinggu: 3,
           guru: "Bu Lisa",
           durasiPerSesi: 35,
@@ -223,7 +240,7 @@ List<Subject> getDummySubjectsForLevel(SchoolLevel level) {
         Subject(
           id: 6,
           nama: "PKN",
-          kelas: "1-A",
+          kelas: gradeNumbers(SchoolLevel.sd),
           jamPerMinggu: 2,
           guru: "Pak Joko",
           durasiPerSesi: 35,
@@ -231,7 +248,7 @@ List<Subject> getDummySubjectsForLevel(SchoolLevel level) {
         Subject(
           id: 7,
           nama: "Agama",
-          kelas: "1-A",
+          kelas: gradeNumbers(SchoolLevel.sd),
           jamPerMinggu: 3,
           guru: "Ust. Hasan",
           durasiPerSesi: 35,
@@ -239,7 +256,7 @@ List<Subject> getDummySubjectsForLevel(SchoolLevel level) {
         Subject(
           id: 8,
           nama: "Seni Budaya",
-          kelas: "1-A",
+          kelas: gradeNumbers(SchoolLevel.sd),
           jamPerMinggu: 2,
           guru: "Bu Maya",
           durasiPerSesi: 35,
@@ -247,7 +264,7 @@ List<Subject> getDummySubjectsForLevel(SchoolLevel level) {
         Subject(
           id: 9,
           nama: "Penjasorkes",
-          kelas: "1-A",
+          kelas: gradeNumbers(SchoolLevel.sd),
           jamPerMinggu: 3,
           guru: "Pak Dedi",
           durasiPerSesi: 35,
@@ -258,7 +275,7 @@ List<Subject> getDummySubjectsForLevel(SchoolLevel level) {
         Subject(
           id: 1,
           nama: "Bahasa Indonesia",
-          kelas: "7-A",
+          kelas: gradeNumbers(SchoolLevel.smp),
           jamPerMinggu: 4,
           guru: "Ibu Siti",
           durasiPerSesi: 40,
@@ -266,7 +283,7 @@ List<Subject> getDummySubjectsForLevel(SchoolLevel level) {
         Subject(
           id: 2,
           nama: "Matematika",
-          kelas: "7-A",
+          kelas: gradeNumbers(SchoolLevel.smp),
           jamPerMinggu: 4,
           guru: "Pak Budi",
           durasiPerSesi: 40,
@@ -274,7 +291,7 @@ List<Subject> getDummySubjectsForLevel(SchoolLevel level) {
         Subject(
           id: 3,
           nama: "IPA",
-          kelas: "7-A",
+          kelas: gradeNumbers(SchoolLevel.smp),
           jamPerMinggu: 4,
           guru: "Bu Rina",
           durasiPerSesi: 40,
@@ -282,7 +299,7 @@ List<Subject> getDummySubjectsForLevel(SchoolLevel level) {
         Subject(
           id: 4,
           nama: "IPS",
-          kelas: "7-A",
+          kelas: gradeNumbers(SchoolLevel.smp),
           jamPerMinggu: 4,
           guru: "Pak Ahmad",
           durasiPerSesi: 40,
@@ -290,7 +307,7 @@ List<Subject> getDummySubjectsForLevel(SchoolLevel level) {
         Subject(
           id: 5,
           nama: "Bahasa Inggris",
-          kelas: "7-A",
+          kelas: gradeNumbers(SchoolLevel.smp),
           jamPerMinggu: 3,
           guru: "Bu Lisa",
           durasiPerSesi: 40,
@@ -298,7 +315,7 @@ List<Subject> getDummySubjectsForLevel(SchoolLevel level) {
         Subject(
           id: 6,
           nama: "PKN",
-          kelas: "7-A",
+          kelas: gradeNumbers(SchoolLevel.smp),
           jamPerMinggu: 2,
           guru: "Pak Joko",
           durasiPerSesi: 40,
@@ -306,7 +323,7 @@ List<Subject> getDummySubjectsForLevel(SchoolLevel level) {
         Subject(
           id: 7,
           nama: "Agama",
-          kelas: "7-A",
+          kelas: gradeNumbers(SchoolLevel.smp),
           jamPerMinggu: 3,
           guru: "Ust. Hasan",
           durasiPerSesi: 40,
@@ -314,7 +331,7 @@ List<Subject> getDummySubjectsForLevel(SchoolLevel level) {
         Subject(
           id: 8,
           nama: "Seni Budaya",
-          kelas: "7-A",
+          kelas: gradeNumbers(SchoolLevel.smp),
           jamPerMinggu: 2,
           guru: "Bu Maya",
           durasiPerSesi: 40,
@@ -322,7 +339,7 @@ List<Subject> getDummySubjectsForLevel(SchoolLevel level) {
         Subject(
           id: 9,
           nama: "Penjasorkes",
-          kelas: "7-A",
+          kelas: gradeNumbers(SchoolLevel.smp),
           jamPerMinggu: 3,
           guru: "Pak Dedi",
           durasiPerSesi: 40,
@@ -330,7 +347,7 @@ List<Subject> getDummySubjectsForLevel(SchoolLevel level) {
         Subject(
           id: 10,
           nama: "Prakarya",
-          kelas: "7-A",
+          kelas: gradeNumbers(SchoolLevel.smp),
           jamPerMinggu: 2,
           guru: "Bu Sari",
           durasiPerSesi: 40,
