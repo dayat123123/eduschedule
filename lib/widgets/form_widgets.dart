@@ -124,18 +124,22 @@ class StepIndicator extends StatelessWidget {
                             ? null
                             : Colors.white.withValues(alpha: 0.68),
                       ),
-                      child: Center(
-                        child: Text(
-                          steps[i],
-                          textAlign: TextAlign.center,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: isActive
-                                ? FontWeight.w700
-                                : FontWeight.w500,
-                            fontSize: textSize - 1,
+                      child: Padding(
+                        padding: const EdgeInsets.all(4),
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.center,
+                          child: Text(
+                            steps[i],
+                            textAlign: TextAlign.center,
+                            maxLines: 2,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: isActive
+                                  ? FontWeight.w700
+                                  : FontWeight.w500,
+                              fontSize: textSize - 1,
+                            ),
                           ),
                         ),
                       ),
@@ -800,62 +804,85 @@ class _FormSekolahState extends State<FormSekolah> {
                     () => TextEditingController(),
                   );
                   return Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
+                    padding: const EdgeInsets.only(bottom: 16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Flexible(
-                              child: Text(
-                                'Subkelas untuk $grade (opsional)',
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: Text(
+                            'Subkelas untuk $grade (opsional)',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ),
+                        LayoutBuilder(
+                          builder: (context, constraints) {
+                            final isMobileWidth = constraints.maxWidth < 620;
+
+                            final inputField = Input(
+                              label: 'Tambah Subkelas',
+                              value: controller.text,
+                              onChange: (v) => controller.text = v,
+                              helperText: 'Contoh: A, B, C',
+                            );
+
+                            final addButton = SizedBox(
+                              width: 44,
+                              height: 44,
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  final val = controller.text
+                                      .trim()
+                                      .toUpperCase();
+                                  if (val.isEmpty) return;
+                                  _addSubclass(grade, val);
+                                  controller.clear();
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.white.withValues(
+                                    alpha: 0.2,
+                                  ),
+                                  padding: EdgeInsets.zero,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                child: const Icon(
+                                  Icons.add,
+                                  size: 20,
                                   color: Colors.white,
-                                  fontWeight: FontWeight.w700,
                                 ),
                               ),
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.end,
+                            );
+
+                            if (isMobileWidth) {
+                              return Column(
                                 children: [
-                                  Expanded(
-                                    child: Input(
-                                      label: 'Tambah Subkelas',
-                                      value: controller.text,
-                                      onChange: (v) => controller.text = v,
-                                      helperText: 'Contoh: A, B, C',
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
+                                  inputField,
+                                  const SizedBox(height: 12),
                                   SizedBox(
-                                    height: 44,
-                                    child: ElevatedButton(
-                                      onPressed: () {
-                                        final val = controller.text
-                                            .trim()
-                                            .toUpperCase();
-                                        if (val.isEmpty) return;
-                                        _addSubclass(grade, val);
-                                        controller.clear();
-                                      },
-                                      style: ElevatedButton.styleFrom(
-                                        minimumSize: const Size(44, 44),
-                                        padding: EdgeInsets.zero,
-                                      ),
-                                      child: const Icon(Icons.add),
-                                    ),
+                                    width: double.infinity,
+                                    child: addButton,
                                   ),
                                 ],
-                              ),
-                            ),
-                          ],
+                              );
+                            }
+
+                            return Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Expanded(child: inputField),
+                                const SizedBox(width: 12),
+                                addButton,
+                              ],
+                            );
+                          },
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 12),
                         Wrap(
                           spacing: 8,
                           runSpacing: 8,
@@ -876,55 +903,34 @@ class _FormSekolahState extends State<FormSekolah> {
                 builder: (context, constraints) {
                   final isMobile = constraints.maxWidth < 620;
 
-                  final inputField = Expanded(
-                    child: Input(
-                      label: 'Tambah Kelas',
-                      value: _kelasController.text,
-                      onChange: (v) {
-                        _kelasController.text = v;
-                        _kelasController.selection = TextSelection.collapsed(
-                          offset: v.length,
-                        );
-                      },
-                      helperText: 'Contoh: 10-A, 7-B, 1-C',
-                    ),
+                  final inputField = Input(
+                    label: 'Tambah Kelas',
+                    value: _kelasController.text,
+                    onChange: (v) {
+                      _kelasController.text = v;
+                      _kelasController.selection = TextSelection.collapsed(
+                        offset: v.length,
+                      );
+                    },
+                    helperText: 'Contoh: 10-A, 7-B, 1-C',
                   );
 
                   final addButton = SizedBox(
-                    height: 58,
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(18),
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                    width: 44,
+                    height: 44,
+                    child: ElevatedButton(
+                      onPressed: _addClass,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white.withValues(alpha: 0.2),
+                        padding: EdgeInsets.zero,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(
-                              0xFF8B5CF6,
-                            ).withValues(alpha: 0.25),
-                            blurRadius: 18,
-                            offset: const Offset(0, 8),
-                          ),
-                        ],
                       ),
-                      child: ElevatedButton(
-                        onPressed: _addClass,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.transparent,
-                          shadowColor: Colors.transparent,
-                          padding: const EdgeInsets.symmetric(horizontal: 24),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(18),
-                          ),
-                        ),
-                        child: const Text(
-                          'Tambah',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
+                      child: const Icon(
+                        Icons.add,
+                        size: 20,
+                        color: Colors.white,
                       ),
                     ),
                   );
@@ -932,17 +938,18 @@ class _FormSekolahState extends State<FormSekolah> {
                   if (isMobile) {
                     return Column(
                       children: [
-                        Row(children: [inputField]),
-                        const SizedBox(height: 14),
+                        inputField,
+                        const SizedBox(height: 12),
                         SizedBox(width: double.infinity, child: addButton),
                       ],
                     );
                   }
 
                   return Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      inputField,
-                      const SizedBox(width: 14),
+                      Expanded(child: inputField),
+                      const SizedBox(width: 12),
                       addButton,
                     ],
                   );
@@ -1064,55 +1071,34 @@ class _FormSekolahState extends State<FormSekolah> {
                 builder: (context, constraints) {
                   final isMobile = constraints.maxWidth < 620;
 
-                  final inputField = Expanded(
-                    child: Input(
-                      label: 'Tambah Ruang',
-                      value: _ruanganController.text,
-                      onChange: (v) {
-                        _ruanganController.text = v;
-                        _ruanganController.selection = TextSelection.collapsed(
-                          offset: v.length,
-                        );
-                      },
-                      helperText: 'Contoh: 1A, 1B, Lab.IPA, Lab.Komputer, Aula',
-                    ),
+                  final inputField = Input(
+                    label: 'Tambah Ruang',
+                    value: _ruanganController.text,
+                    onChange: (v) {
+                      _ruanganController.text = v;
+                      _ruanganController.selection = TextSelection.collapsed(
+                        offset: v.length,
+                      );
+                    },
+                    helperText: 'Contoh: 1A, 1B, Lab.IPA, Lab.Komputer, Aula',
                   );
 
                   final addButton = SizedBox(
-                    height: 58,
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(18),
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                    width: 44,
+                    height: 44,
+                    child: ElevatedButton(
+                      onPressed: _addRuang,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white.withValues(alpha: 0.2),
+                        padding: EdgeInsets.zero,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(
-                              0xFF8B5CF6,
-                            ).withValues(alpha: 0.25),
-                            blurRadius: 18,
-                            offset: const Offset(0, 8),
-                          ),
-                        ],
                       ),
-                      child: ElevatedButton(
-                        onPressed: _addRuang,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.transparent,
-                          shadowColor: Colors.transparent,
-                          padding: const EdgeInsets.symmetric(horizontal: 24),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(18),
-                          ),
-                        ),
-                        child: const Text(
-                          'Tambah',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
+                      child: const Icon(
+                        Icons.add,
+                        size: 20,
+                        color: Colors.white,
                       ),
                     ),
                   );
@@ -1120,17 +1106,18 @@ class _FormSekolahState extends State<FormSekolah> {
                   if (isMobile) {
                     return Column(
                       children: [
-                        Row(children: [inputField]),
-                        const SizedBox(height: 14),
+                        inputField,
+                        const SizedBox(height: 12),
                         SizedBox(width: double.infinity, child: addButton),
                       ],
                     );
                   }
 
                   return Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      inputField,
-                      const SizedBox(width: 14),
+                      Expanded(child: inputField),
+                      const SizedBox(width: 12),
                       addButton,
                     ],
                   );
@@ -1872,49 +1859,59 @@ class _FormMapelState extends State<FormMapel> {
             margin: const EdgeInsets.only(bottom: 16),
             child: Column(
               children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 42,
-                      height: 42,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(14),
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    final isSmallScreen = constraints.maxWidth < 500;
+                    return Row(
+                      children: [
+                        Container(
+                          width: 42,
+                          height: 42,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(14),
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                            ),
+                          ),
+                          child: const Icon(
+                            Icons.menu_book_rounded,
+                            color: Colors.white,
+                          ),
                         ),
-                      ),
-                      child: const Icon(
-                        Icons.menu_book_rounded,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        mainAxisAlignment: .center,
-                        crossAxisAlignment: .start,
-                        children: [
-                          Text(
-                            'Mata Pelajaran #${index + 1}',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w800,
-                              fontSize: 15,
-                              color: Colors.white,
-                            ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            mainAxisAlignment: .center,
+                            crossAxisAlignment: .start,
+                            children: [
+                              Text(
+                                'Mapel #${index + 1}',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 15,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              Text(
+                                'Atur kelas dan waktu pelajaran',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  color: Colors.white60,
+                                  fontSize: isSmallScreen ? 10 : 11,
+                                  height: 1.4,
+                                ),
+                              ),
+                            ],
                           ),
-                          Text(
-                            'Atur kelas dan alokasi waktu pelajaran.',
-                            style: TextStyle(
-                              color: Colors.white60,
-                              fontSize: 11,
-                              height: 1.4,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    _DeleteButton(onTap: () => remove(m.id)),
-                  ],
+                        ),
+                        const SizedBox(width: 8),
+                        _DeleteButton(onTap: () => remove(m.id)),
+                      ],
+                    );
+                  },
                 ),
 
                 LayoutBuilder(
@@ -2030,9 +2027,12 @@ class _FormMapelState extends State<FormMapel> {
                         const SizedBox(height: 18),
 
                         if (isMobile) ...[
-                          kelasField,
-
-                          const SizedBox(height: 18),
+                          // IMPORTANT: avoid Expanded inside scrollable Column.
+                          // Convert layout to non-flex widgets.
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 18),
+                            child: kelasField,
+                          ),
 
                           jamField,
 
@@ -2063,45 +2063,47 @@ class _FormMapelState extends State<FormMapel> {
                             ),
                           ),
                         ] else ...[
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [Expanded(flex: 2, child: kelasField)],
-                          ),
-
-                          const SizedBox(height: 18),
-
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                          Column(
                             children: [
-                              Expanded(child: jamField),
-
-                              const SizedBox(width: 16),
-
-                              Expanded(child: durasiField),
-                            ],
-                          ),
-
-                          const SizedBox(height: 14),
-
-                          // Copy button
-                          SizedBox(
-                            width: double.infinity,
-                            child: OutlinedButton.icon(
-                              onPressed: () =>
-                                  copyDurationToAll(m.durasiPerSesi),
-                              icon: const Icon(Icons.content_copy_rounded),
-                              label: const Text(
-                                'Salin durasi ke semua',
-                                style: TextStyle(color: Colors.white70),
+                              // kelas
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 18),
+                                child: kelasField,
                               ),
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: Colors.white70,
-                                side: const BorderSide(color: Colors.white30),
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 12,
+                              // jam & durasi
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Expanded(child: jamField),
+                                  const SizedBox(width: 16),
+                                  Expanded(child: durasiField),
+                                ],
+                              ),
+                              const SizedBox(height: 14),
+
+                              // Copy button
+                              SizedBox(
+                                width: double.infinity,
+                                child: OutlinedButton.icon(
+                                  onPressed: () =>
+                                      copyDurationToAll(m.durasiPerSesi),
+                                  icon: const Icon(Icons.content_copy_rounded),
+                                  label: const Text(
+                                    'Salin durasi ke semua',
+                                    style: TextStyle(color: Colors.white70),
+                                  ),
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: Colors.white70,
+                                    side: const BorderSide(
+                                      color: Colors.white30,
+                                    ),
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 12,
+                                    ),
+                                  ),
                                 ),
                               ),
-                            ),
+                            ],
                           ),
                         ],
                       ],
